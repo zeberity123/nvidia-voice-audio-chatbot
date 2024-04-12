@@ -23,4 +23,4 @@
 - 안정호 birth0508@gmail.com 
 - 백동렬 dbstickman@gmail.com
 - 장지완 jiwanjang0577@gmail.com
--
+- 강준현 mallejh@gmail.com
