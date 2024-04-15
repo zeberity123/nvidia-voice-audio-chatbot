@@ -1,5 +1,8 @@
 # NVauC
 
+# Link 
+- NOTION: https://github.com/zeberity123/nvidia-voice-audio-chatbot.git
+- GITHUB: https://github.com/zeberity123/nvidia-voice-audio-chatbot.git
 
 ## 프로젝트 개요
 - Vocal Remover, Gaudio Studio, Spleeter 등의 현재 배포중인 음원/보컬 분리 AI에서는 음성이 변조된 목소리 (오토튠, 확성기, 디스토션, 보컬로이드)가 포함된 음원의 일부 보컬사운드가 잘 분리되지 않거나 다른 악기소리로 분류되는 경향이 있음. 이를 보완하기 위해 약 150곡의 보컬로이드(기계음 목소리) 원본 보이스 음원을 기존 학습 데이터(musdb18hq 등)에 추가 데이터로 활용하여 개선된 모델을 생성하고, 더 명확하게 분리된 보컬 파일을 실생활 및 서비스에 응용.
