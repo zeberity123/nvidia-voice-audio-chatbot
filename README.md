@@ -1,7 +1,7 @@
 # NVauC
 
-# Link 
-- NOTION: https://github.com/zeberity123/nvidia-voice-audio-chatbot.git
+## Link 
+- NOTION: https://jumbled-leader-4a7.notion.site/Nvidia-Project-1dde7602e42b46e48c5a5831bc102da9
 - GITHUB: https://github.com/zeberity123/nvidia-voice-audio-chatbot.git
 
 ## 프로젝트 개요
@@ -15,7 +15,6 @@
     2. 추출된 가사를 통한 노래 분위기 추론
     3. 추출된 가사의 단위시간 당 단어 수를 통해 장르(발라드, 락, 랩)구분
  - 챗봇 서비스 웹의 유저 친화적인 UI구성
-
 
 ## Requirements
 
