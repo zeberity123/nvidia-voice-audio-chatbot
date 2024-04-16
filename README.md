@@ -22,6 +22,12 @@
 
 ## How to run
 
+## Resources
+- MUSDB18-HQ: https://sigsep.github.io/datasets/musdb.html#musdb18-compressed-stems
+
+- Vocaloid Stems: https://vocaloid-collection.jp/2023-spring/en/stems/
+
+
 ## Team members
 - 김현우 darudayu123@gmail.com
 - 안정호 birth0508@gmail.com 
