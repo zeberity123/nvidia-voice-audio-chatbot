@@ -1,14 +1,12 @@
 import os
 
-path = 'D:\miku_project\Mixdown'
+path = r"D:/musdb18hq/vocaloid_musdb"
 file_list = os.listdir(path)
 
 n_songs = len(file_list)
 
-new_songs = []
-for i in range(n_songs): 
-    new_songs.append(file_list[i].split('_')[0])
-new_songs = list(set(new_songs))
+print(f'{n_songs} songs:')
+print(file_list)
 
 
 import librosa
@@ -18,11 +16,13 @@ mono = True
 
 f= open("new_songs.txt","w+", encoding='utf-8')
 
-print(f'{len(new_songs)} songs:')
 for i in file_list:
     audio_path = os.path.join(path, i)
-    (audio, sample_rate) = librosa.load(audio_path, sr=sample_rate, mono=mono)
-    duration = librosa.get_duration(y=audio, sr=sample_rate)
+    audio_files = os.listdir(audio_path)
+    for j in audio_files:
+        file_path = os.path.join(audio_path, j)
+        print(f'file_pathL----------------:{file_path}')
+        (audio, sample_rate) = librosa.load(file_path, sr=sample_rate, mono=mono)
+        duration = librosa.get_duration(y=audio, sr=sample_rate)
 
-    f.write(i+' '+ ' ||  ' 'duration: ' + str(duration) +'\n')
-    break
+        f.write(j+' '+ ' ||  ' 'duration: ' + str(duration) +'\n')
