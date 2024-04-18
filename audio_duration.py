@@ -1,6 +1,6 @@
 import os
 
-path = r"D:/musdb18hq/vocaloid_musdb"
+path = r"D:/musdb18hq/vocaloid_4stems"
 file_list = os.listdir(path)
 
 n_songs = len(file_list)
@@ -14,7 +14,7 @@ import librosa
 sample_rate = 44100
 mono = True
 
-f= open("new_songs.txt","w+", encoding='utf-8')
+f= open("custom_songs_list.txt","w+", encoding='utf-8')
 
 for i in file_list:
     audio_path = os.path.join(path, i)

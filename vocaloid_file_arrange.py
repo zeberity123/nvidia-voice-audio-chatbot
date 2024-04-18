@@ -32,7 +32,7 @@ def moveFile(path_before, path_after):
         shutil.move(path_before+"/"+key, path_after+"/"+value)
 
 #분류할 파일이 있는 위치 폴더
-path_before = 'D:/musdb18hq/vocaloid_stems'
+path_before = 'D:/musdb18hq/vocaloid_4stems'
 file_list = fileList(path_before)
 
 #옮길 경로 폴더
