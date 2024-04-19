@@ -63,7 +63,8 @@ def train(
     audio_path = str(data)
     params = load_configuration(params_filename)
     session_config = tf.compat.v1.ConfigProto()
-    session_config.gpu_options.per_process_gpu_memory_fraction = 0.45
+    session_config.gpu_options.allow_growth = True
+    # session_config.gpu_options.per_process_gpu_memory_fraction = 0.45
     estimator = tf.estimator.Estimator(
         model_fn=model_fn,
         model_dir=params["model_dir"],
