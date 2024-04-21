@@ -1,4 +1,4 @@
-spleeter train -p configs/musdb_config.json -d C:\musdb18hq\vocaloid_musdb --verbose
+python -m spleeter train -p configs/vocadb_config.json -d D:/musdb18hq --verbose
 
 set CUDA_VISIBLE_DEVICES=0 & spleeter train -p configs/musdb_config.json -d D:/musdb18hq --verbose
 
