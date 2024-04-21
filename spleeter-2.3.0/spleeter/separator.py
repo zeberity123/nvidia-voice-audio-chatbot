@@ -84,7 +84,8 @@ def create_estimator(params, MWF):
     params["MWF"] = MWF
     # Setup config
     session_config = tf.compat.v1.ConfigProto()
-    session_config.gpu_options.per_process_gpu_memory_fraction = 0.7
+    # session_config.gpu_options.per_process_gpu_memory_fraction = 0.7
+    session_config.gpu_options.allow_growth = True
     config = tf.estimator.RunConfig(session_config=session_config)
     # Setup estimator
     estimator = tf.estimator.Estimator(
