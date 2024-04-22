@@ -1,7 +1,7 @@
 {
     "train_csv": "configs/vocadb_2stems_train.csv",
     "validation_csv": "configs/vocadb_2stems_validation.csv",
-    "model_dir": "vocadb_2stems",
+    "model_dir": "vocadb_2stems_model",
     "mix_name": "mix",
     "instrument_list": ["vocals", "accompaniment"],
     "sample_rate":44100,
