@@ -1,8 +1,8 @@
-/cache_vocadb
-/finetune_model
-/melan_50k
-/melan_70k
-/melan_musdb1500k
-/pretrained_models
-/vocadb_model
-/cache
+spleeter/cache_vocadb
+spleeter/finetune_model
+spleeter/melan_50k
+spleeter/melan_70k
+spleeter/melan_musdb1500k
+spleeter/pretrained_models
+spleeter/vocadb_model
+spleeter/cache
