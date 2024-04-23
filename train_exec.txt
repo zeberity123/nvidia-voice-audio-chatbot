@@ -4,4 +4,6 @@ set CUDA_VISIBLE_DEVICES=0 & spleeter train -p configs/musdb_config.json -d D:/m
 
 spleeter separate -o melan_test -p spleeter:4stems melancholic_mixture.mp3
 
-python -m spleeter train -p configs/vocadb_2stems.json -d C:/musdb18hq --verbose
+python -m spleeter train -p configs/vocadb_2stems.json -d /musdb18hq --verbose
+
+python -m spleeter train -p configs/mus_voca_config.json -d C:/musdb18hq --verbose
