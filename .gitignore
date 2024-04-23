@@ -6,3 +6,4 @@ spleeter/melan_musdb1500k
 spleeter/pretrained_models
 spleeter/vocadb_model
 spleeter/cache
+spleeter/musdb_gaudio
