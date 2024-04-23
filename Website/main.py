@@ -13,7 +13,8 @@ VOCALS = [{"name": "Voice Separation", "type": "mp3"}, {"name": "Additional Info
 # create api inpoint for jinja2 templates
 @app.get('/')
 async def name(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request, "name": "NVauC", "vocals": VOCALS})
+    return templates.TemplateResponse("mp3_upload.html", {"request": request})
+    # return templates.TemplateResponse("home.html", {"request": request, "name": "NVauC", "vocals": VOCALS})
 #cd Website
 # uvicorn main:app --reload
 
