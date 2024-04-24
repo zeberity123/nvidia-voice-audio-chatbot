@@ -2,6 +2,8 @@ from fastapi import FastAPI, WebSocket, Request, File, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.logger import logger
+from fastapi import FastAPI, File, UploadFile, HTTPException
+
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -14,10 +16,24 @@ async def client(request: Request):
 
 @app.post("/upload/")
 async def handle_file_upload(file: UploadFile = File(...)):
-    # Process the uploaded file
+    # Check if the file extension is either .wav or .mp3
+    valid_extensions = ["wav", "mp3"]
+    file_extension = file.filename.split('.')[-1].lower()
+    if file_extension not in valid_extensions:
+        raise HTTPException(
+            status_code=400, detail="Invalid file type. Only WAV or MP3 files are allowed.")
+
+    # Optional: Check MIME type for further validation
+    valid_mime_types = ["audio/wav", "audio/x-wav", "audio/mpeg"]
+    if file.content_type not in valid_mime_types:
+        raise HTTPException(
+            status_code=400, detail="Invalid MIME type for the file.")
+
+    # Save the file if it's valid
     file_location = f"uploads/{file.filename}"
     with open(file_location, "wb+") as file_object:
         file_object.write(await file.read())
+
     return {"info": f"file '{file.filename}' saved at '{file_location}'"}
 
 
@@ -30,11 +46,11 @@ async def websocket_endpoint(websocket: WebSocket):
         data = await websocket.receive_text()
 
         if data == "1":
-            response = "You selected Audio Separation. Please upload your file using the upload form."
+            response = "You selected Audio Separation. Please upload your file."
         elif data == "2":
-            response = "You selected Finding Info. Please provide more details..."
+            response = "You selected Finding Info."
         elif data == "3":
-            response = "You selected Recommend New Songs. Fetching recommendations..."
+            response = "You selected Recommend New Songs."
         else:
             response = f"Unrecognized option: {data}. Please select 1, 2, or 3."
 
