@@ -1,9 +1,7 @@
 spleeter/cache_vocadb
 spleeter/finetune_model
-spleeter/melan_50k
-spleeter/melan_70k
-spleeter/melan_musdb1500k
 spleeter/pretrained_models
 spleeter/vocadb_model
 spleeter/cache
-spleeter/musdb_gaudio
+spleeter/results
+spleeter/test_audio
