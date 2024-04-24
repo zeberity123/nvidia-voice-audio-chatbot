@@ -1,33 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chatbot</title>
-</head>
-<body>
-<h1>WebSocket Chat</h1>
-<form action="" onsubmit="sendMessage(event)">
-<input type="text" id="messageText" autocomplete="off"/>
-<button>Send</button>
-</form>
-<ul id='messages'>
-</ul>
-<script>
-var ws = new WebSocket("ws://localhost:8000/ws");
-ws.onmessage = function(event) {
-var messages = document.getElementById('messages')
-var message = document.createElement('li')
-var content = document.createTextNode(event.data)
-message.appendChild(content)
-messages.appendChild(message)
-};
-function sendMessage(event) {
-var input = document.getElementById("messageText")
-ws.send(input.value)
-input.value = ''
-event.preventDefault()
-}
-</script>
-</body>
+    <style>
+      /* Basic styling for visibility */
+      #uploadForm {
+        margin-top: 20px;
+        display: none; /* Initially hidden */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>WebSocket Chat</h1>
+    <!-- Chat message input and send button -->
+    <form action="" onsubmit="sendMessage(event)">
+      <input
+        type="text"
+        id="messageText"
+        autocomplete="off"
+        placeholder="Type a message..."
+      />
+      <button type="submit">Send</button>
+    </form>
+    <!-- Messages list to display incoming messages from the server -->
+    <ul id="messages"></ul>
+    <!-- File upload form, initially hidden -->
+    <form
+      id="uploadForm"
+      action="/upload/"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      <label for="file">Upload your file:</label>
+      <input type="file" id="file" name="file" required />
+      <button type="submit">Upload File</button>
+    </form>
+
+    <script>
+      // Creating a new WebSocket connection to the server
+      var ws = new WebSocket("ws://localhost:8000/ws");
+
+      ws.onopen = function () {
+        console.log("Connected to the WebSocket server");
+      };
+
+      ws.onmessage = function (event) {
+        var messages = document.getElementById("messages");
+        var message = document.createElement("li");
+        message.textContent = event.data;
+        messages.appendChild(message);
+
+        // Show the upload form if the server asks for file upload
+        if (
+          event.data.includes("Please upload your file using the upload form")
+        ) {
+          document.getElementById("uploadForm").style.display = "block";
+        }
+      };
+
+      // Prevent the default form submission and send the message through WebSocket
+      function sendMessage(event) {
+        var input = document.getElementById("messageText");
+        ws.send(input.value); // Sending the message
+        input.value = ""; // Clearing the input field
+        event.preventDefault(); // Preventing the form from submitting traditionally
+      }
+    </script>
+  </body>
 </html>
