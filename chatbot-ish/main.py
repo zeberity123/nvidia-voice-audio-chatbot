@@ -1,9 +1,7 @@
-from fastapi import FastAPI, WebSocket, Request, File, UploadFile
+from fastapi import FastAPI, WebSocket, Request, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.logger import logger
-from fastapi import FastAPI, File, UploadFile, HTTPException
-
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -16,20 +14,17 @@ async def client(request: Request):
 
 @app.post("/upload/")
 async def handle_file_upload(file: UploadFile = File(...)):
-    # Check if the file extension is either .wav or .mp3
     valid_extensions = ["wav", "mp3"]
     file_extension = file.filename.split('.')[-1].lower()
     if file_extension not in valid_extensions:
         raise HTTPException(
             status_code=400, detail="Invalid file type. Only WAV or MP3 files are allowed.")
 
-    # Optional: Check MIME type for further validation
     valid_mime_types = ["audio/wav", "audio/x-wav", "audio/mpeg"]
     if file.content_type not in valid_mime_types:
         raise HTTPException(
             status_code=400, detail="Invalid MIME type for the file.")
 
-    # Save the file if it's valid
     file_location = f"uploads/{file.filename}"
     with open(file_location, "wb+") as file_object:
         file_object.write(await file.read())
@@ -58,5 +53,5 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="127.0.0.1", port=8000,
+    uvicorn.run("main:app", host="127.0.0.1", port=8000,
                 log_level="debug", reload=True)
