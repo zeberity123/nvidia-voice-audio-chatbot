@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chatbot</title>
+    <link rel="stylesheet" href="../static/styles.css" />
+
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -17,6 +19,7 @@
       }
       .chat-container {
         width: 360px;
+        height: 80vh;
         background-color: white;
         box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
@@ -28,7 +31,7 @@
         list-style: none;
         padding: 20px;
         overflow-y: auto;
-        height: 300px;
+        height: calc(80vh - 60px);
         margin: 0;
       }
       #messages li {
