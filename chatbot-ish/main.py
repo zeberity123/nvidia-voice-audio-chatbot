@@ -28,7 +28,6 @@ async def list_files():
     ]
 
 
-<<<<<<< HEAD
 @app.get("/download/{filename}")
 async def download_file(
     filename: str, disposition: str = Query("attachment", enum=["inline", "attachment"])
@@ -43,23 +42,6 @@ async def download_file(
         headers={"Content-Disposition": f"{disposition}; filename={filename}"},
     )
 
-=======
-@app.get("/download/")
-async def download_files():
-
-    files = [
-        file
-        for file in os.listdir(DOWNLOAD_DIR)
-        if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))
-    ]
-    if not files:
-        raise HTTPException(status_code=404, detail="No files found")
-
-    first_file = files[0]
-    file_path = os.path.join(DOWNLOAD_DIR, first_file)
-
-    return FileResponse(file_path, filename=first_file)
->>>>>>> 151ad08a74e77150ca2209ae205babbeb52eb926
 
 @app.post("/upload/")
 async def handle_file_upload(file: UploadFile = File(...)):
