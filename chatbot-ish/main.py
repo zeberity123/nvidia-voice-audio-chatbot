@@ -7,8 +7,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.logger import logger
 from typing import List
 
-UPLOAD_DIR = "uploaded_files"
-DOWNLOAD_DIR = "C:/Users/Harmony03/Desktop/NVauC/nvidia-voice-audio-chatbot/nvidia-voice-audio-chatbot/chatbot-ish/processed_files"
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploaded_files")
+DOWNLOAD_DIR = os.path.join(BASE_DIR, "processed_files")
 
 # Create the directory if it doesn't exist
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -17,56 +20,68 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 
+def process_and_move_file(src_file_path, dest_dir):
+    # Simulate processing
+    # Move or copy the file to the destination directory
+    os.rename(src_file_path, os.path.join(dest_dir, os.path.basename(src_file_path)))
+
+
 @app.get("/")
 async def client(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
 @app.get("/files/", response_model=List[str])
 async def list_files():
     # List all files in the folder
-    files = [file for file in os.listdir(DOWNLOAD_DIR) if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))]
+    files = [
+        file
+        for file in os.listdir(DOWNLOAD_DIR)
+        if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))
+    ]
     return files
+
 
 @app.get("/download/")
 async def download_files():
-    files = [file for file in os.listdir(DOWNLOAD_DIR) if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))]
+    files = [
+        file
+        for file in os.listdir(DOWNLOAD_DIR)
+        if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))
+    ]
     if not files:
         raise HTTPException(status_code=404, detail="No files found")
-    
+
     first_file = files[0]
     file_path = os.path.join(DOWNLOAD_DIR, first_file)
-    
+
     return FileResponse(file_path, filename=first_file)
 
 
 @app.post("/upload/")
 async def handle_file_upload(file: UploadFile = File(...)):
-    valid_extensions = ["wav", "mp3"]
-    file_extension = file.filename.split('.')[-1].lower()
-    if file_extension not in valid_extensions:
-        raise HTTPException(
-            status_code=400, detail="Invalid file type. Only WAV or MP3 files are allowed.")
+    # existing upload logic here
 
-    valid_mime_types = ["audio/wav", "audio/x-wav", "audio/mpeg"]
-    if file.content_type not in valid_mime_types:
-        raise HTTPException(
-            status_code=400, detail="Invalid MIME type for the file.")
-
-    #Changed path to UPLOAD_DIR. This directory can be modified when connecting to model.
     file_location = os.path.join(UPLOAD_DIR, file.filename)
     with open(file_location, "wb+") as file_object:
         file_object.write(await file.read())
 
-    return {"info": f"file '{file.filename}' saved at '{file_location}'"}
+    # Process and move the file to DOWNLOAD_DIR
+    process_and_move_file(file_location, DOWNLOAD_DIR)
 
+    return {
+        "info": f"file '{file.filename}' saved at '{file_location}' and processed to {DOWNLOAD_DIR}"
+    }
 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     await websocket.send_text("Welcome client: {websocket.client}")
-    await websocket.send_text("1. Audio Separation\n2. Finding Info\n3. Recommend New Songs")
-    
+    await websocket.send_text(
+        "1. Audio Separation\n2. Finding Info\n3. Recommend New Songs"
+    )
+
     while True:
         data = await websocket.receive_text()
 
@@ -81,7 +96,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 file_path = os.path.join(UPLOAD_DIR, file_name)
 
                 # Write the received file data to disk
-                with open(file_path, 'wb') as f:
+                with open(file_path, "wb") as f:
                     f.write(file_data)
 
                 # Send response back to client
@@ -108,7 +123,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
     await websocket.close()
 
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000,
-                log_level="debug", reload=True)
+
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="debug", reload=True)
