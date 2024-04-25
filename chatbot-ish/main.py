@@ -6,11 +6,7 @@ from typing import List
 from fastapi import Query
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-<<<<<<< HEAD
 FILE_DIR = os.path.join(BASE_DIR, "uploaded_files")
-=======
-FILE_DIR = os.path.join(BASE_DIR, "uploaded_files")  # Single directory for upload and download
->>>>>>> e276da68c9725ad08ee5da200223ed9f440098a4
 
 # Ensure directory exists
 os.makedirs(FILE_DIR, exist_ok=True)
