@@ -22,7 +22,11 @@ for song_name in song_names:
     name_split = song_name.split('.')[0]
     short_name = name_split.split('_')[0]
     pre_folder = name_split[:-7]
-    out_loc = f'processed_files/vocadb_{model_steps}k/{pre_folder}{model_steps}k'
+
+    # for multiple files
+    # out_loc = f'processed_files/vocadb_{model_steps}k/{pre_folder}{model_steps}k'
+
+    out_loc = f'processed_files/'
     in_loc = f'uploaded_files/{song_name}'
 
     commands = [
@@ -30,7 +34,10 @@ for song_name in song_names:
     ]
 
     for i in instruments:
-        commands.append(['mv', f'{out_loc}/{name_split}/{i}.*', f'{out_loc}/{short_name}_{model_steps}k_{i}.wav'])
+        # for multiple files
+        # commands.append(['mv', f'{out_loc}/{name_split}/{i}.*', f'{out_loc}/{short_name}_{model_steps}k_{i}.wav'])
+
+        commands.append(['mv', f'{out_loc}/{name_split}/{i}.*', f'{out_loc}/{pre_folder}{i}.wav'])
     commands.append(['rm', '-r', f'{out_loc}/{name_split}'])
 
     for command in commands:
