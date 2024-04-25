@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.chat-container {
+    width: 360px;
+    height: 80vh;
+    background-color: white;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#messages {
+    list-style: none;
+    padding: 20px;
+    overflow-y: auto;
+    height: calc(80vh - 60px);
+    margin: 0;
+}
+
+#messages li {
+    margin-bottom: 10px;
+    border-radius: 20px;
+    padding: 10px 20px;
+    color: white;
+    line-height: 1.4;
+}
+
+#messages li.sent {
+    background-color: #0b93f6;
+    align-self: flex-end;
+    max-width: 80%;
+}
+
+#messages li.received {
+    background-color: #e5e5ea;
+    color: black;
+    align-self: flex-start;
+    max-width: 80%;
+}
+
+form {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}
+
+input[type="text"],
+input[type="file"] {
+    flex: 1;
+    padding: 10px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #0b93f6;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#uploadForm {
+    display: none;
+    justify-content: space-between;
+    padding: 10px;
+}
