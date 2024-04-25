@@ -17,7 +17,7 @@
     "batch_size":4,
     "training_cache":"cache_vocadb/training",
     "validation_cache":"cache_vocadb/validation",
-    "train_max_steps": 390000,
+    "train_max_steps": 100000,
     "throttle_secs":600,
     "random_seed":3,
     "save_checkpoints_steps":300,

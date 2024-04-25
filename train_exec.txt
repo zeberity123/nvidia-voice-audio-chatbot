@@ -2,8 +2,7 @@ python -m spleeter train -p configs/vocadb_config.json -d C:/musdb18hq --verbose
 
 set CUDA_VISIBLE_DEVICES=0 & spleeter train -p configs/musdb_config.json -d D:/musdb18hq --verbose
 
-spleeter separate -o melan_test -p spleeter:4stems melancholic_mixture.mp3
-
-python -m spleeter train -p configs/vocadb_2stems.json -d /musdb18hq --verbose
-
-python -m spleeter train -p configs/mus_voca_config.json -d C:/musdb18hq --verbose
+spleeter separate -o results/melan_90k -p spleeter:4stems test_audio/melancholic_mixture.mp3
+spleeter separate -o results/raspberry_90k -p spleeter:4stems test_audio/raspberry_monster_mixture.wav
+spleeter separate -o results/amano_90k -p spleeter:4stems test_audio/amanojaku_mixture.wav
+spleeter separate -o results/melt_100k -p spleeter:4stems test_audio/melt_mixture.wav
