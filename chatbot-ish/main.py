@@ -1,30 +1,18 @@
 import os
-import uuid
-import shutil
 from fastapi import FastAPI, WebSocket, Request, File, UploadFile, HTTPException
-from fastapi.responses import HTMLResponse, FileResponse
-from starlette.responses import FileResponse
+from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.logger import logger
 from typing import List
-
-import os
+from fastapi import Query
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploaded_files")
-DOWNLOAD_DIR = os.path.join(BASE_DIR, "processed_files")
+FILE_DIR = os.path.join(BASE_DIR, "files")  # Single directory for upload and download
 
-# Create the directory if it doesn't exist
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+# Ensure directory exists
+os.makedirs(FILE_DIR, exist_ok=True)
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-
-
-def process_and_move_file(src_file_path, dest_dir):
-    # Simulate processing
-    # Move or copy the file to the destination directory
-    os.rename(src_file_path, os.path.join(dest_dir, os.path.basename(src_file_path)))
 
 
 @app.get("/")
@@ -35,67 +23,37 @@ async def client(request: Request):
 @app.get("/files/", response_model=List[str])
 async def list_files():
     # List all files in the folder
-    files = [
-        file
-        for file in os.listdir(DOWNLOAD_DIR)
-        if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))
+    return [
+        f for f in os.listdir(FILE_DIR) if os.path.isfile(os.path.join(FILE_DIR, f))
     ]
-    return files
 
 
-@app.get("/download/")
-async def download_files():
-<<<<<<< HEAD
-    files = [
-        file
-        for file in os.listdir(DOWNLOAD_DIR)
-        if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))
-    ]
-    if not files:
-        raise HTTPException(status_code=404, detail="No files found")
+@app.get("/download/{filename}")
+async def download_file(
+    filename: str, disposition: str = Query("attachment", enum=["inline", "attachment"])
+):
+    file_path = os.path.join(FILE_DIR, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
 
-    first_file = files[0]
-    file_path = os.path.join(DOWNLOAD_DIR, first_file)
-
-    return FileResponse(file_path, filename=first_file)
-=======
-    if not os.path.exists(DOWNLOAD_DIR):
-        raise HTTPException(status_code=404, detail="Directory not found")
-
-    # Create a temporary directory to store the ZIP archive
-    temp_dir = "temp_download"
-    os.makedirs(temp_dir, exist_ok=True)
-
-    # Create a ZIP archive of the entire directory
-    zip_filename = os.path.join(temp_dir, "downloaded_files.zip")
-    shutil.make_archive(os.path.splitext(zip_filename)[0], 'zip', DOWNLOAD_DIR)
-
-    # Read the ZIP archive into a BytesIO object
-    with open(zip_filename, "rb") as f:
-        zip_data = BytesIO(f.read())
-
-    # Remove the temporary directory
-    shutil.rmtree(temp_dir)
-
-    # Return the ZIP archive as a StreamingResponse
-    return StreamingResponse(zip_data, media_type="application/zip", headers={"Content-Disposition": "attachment; filename=downloaded_files.zip"})
->>>>>>> dfccd0eaafe25f5bdca94086b9a9cdeb88d24da7
+    return FileResponse(
+        file_path,
+        filename=filename,
+        headers={"Content-Disposition": f"{disposition}; filename={filename}"},
+    )
 
 
 @app.post("/upload/")
 async def handle_file_upload(file: UploadFile = File(...)):
-    # existing upload logic here
+    file_extension = file.filename.split(".")[-1].lower()
+    if file_extension not in ["wav", "mp3"]:
+        raise HTTPException(status_code=400, detail="Invalid file type")
 
-    file_location = os.path.join(UPLOAD_DIR, file.filename)
+    file_location = os.path.join(FILE_DIR, file.filename)
     with open(file_location, "wb+") as file_object:
         file_object.write(await file.read())
 
-    # Process and move the file to DOWNLOAD_DIR
-    process_and_move_file(file_location, DOWNLOAD_DIR)
-
-    return {
-        "info": f"file '{file.filename}' saved at '{file_location}' and processed to {DOWNLOAD_DIR}"
-    }
+    return {"info": f"File '{file.filename}' saved at '{file_location}'"}
 
 
 @app.websocket("/ws")
