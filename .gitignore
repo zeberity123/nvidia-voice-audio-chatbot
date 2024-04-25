@@ -1,9 +1,5 @@
-spleeter/cache_vocadb
-spleeter/finetune_model
-spleeter/pretrained_models
-spleeter/vocadb_model
-spleeter/cache
-spleeter/results
-spleeter/test_audio
-spleeter/cache_voca_mus
-spleeter/voca_mus_model
+spleeter_working
+chatbot-ish/pretrained_models
+chatbot-ish/uploaded_files
+chatbot-ish/processed_files
+
