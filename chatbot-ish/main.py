@@ -1,11 +1,14 @@
 import os
 import uuid
 from fastapi import FastAPI, WebSocket, Request, File, UploadFile, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
+from starlette.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.logger import logger
+from typing import List
 
 UPLOAD_DIR = "uploaded_files"
+DOWNLOAD_DIR = "C:/Users/Harmony03/Desktop/NVauC/nvidia-voice-audio-chatbot/nvidia-voice-audio-chatbot/chatbot-ish/processed_files"
 
 # Create the directory if it doesn't exist
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -17,6 +20,23 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/")
 async def client(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/files/", response_model=List[str])
+async def list_files():
+    # List all files in the folder
+    files = [file for file in os.listdir(DOWNLOAD_DIR) if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))]
+    return files
+
+@app.get("/download/")
+async def download_files():
+    files = [file for file in os.listdir(DOWNLOAD_DIR) if os.path.isfile(os.path.join(DOWNLOAD_DIR, file))]
+    if not files:
+        raise HTTPException(status_code=404, detail="No files found")
+    
+    first_file = files[0]
+    file_path = os.path.join(DOWNLOAD_DIR, first_file)
+    
+    return FileResponse(file_path, filename=first_file)
 
 
 @app.post("/upload/")
@@ -38,6 +58,7 @@ async def handle_file_upload(file: UploadFile = File(...)):
         file_object.write(await file.read())
 
     return {"info": f"file '{file.filename}' saved at '{file_location}'"}
+
 
 
 @app.websocket("/ws")
@@ -68,6 +89,9 @@ async def websocket_endpoint(websocket: WebSocket):
             except Exception as e:
                 # Handle any errors that occur during file upload
                 await websocket.send_text(f"Error uploading file: {e}")
+            # web model will call upon chatbot-ish\uploaded_files and split the stems.
+            # assuming that the path of the stored stems is chatbot-ish/processed_files.
+            # now will make a web page where the user can download the files.
 
         elif data == "2":
             response = "You selected Finding Info."
