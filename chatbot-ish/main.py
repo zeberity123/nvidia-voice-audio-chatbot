@@ -1,5 +1,6 @@
 import os
 import uuid
+import shutil
 from fastapi import FastAPI, WebSocket, Request, File, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from starlette.responses import FileResponse
@@ -44,6 +45,7 @@ async def list_files():
 
 @app.get("/download/")
 async def download_files():
+<<<<<<< HEAD
     files = [
         file
         for file in os.listdir(DOWNLOAD_DIR)
@@ -56,6 +58,28 @@ async def download_files():
     file_path = os.path.join(DOWNLOAD_DIR, first_file)
 
     return FileResponse(file_path, filename=first_file)
+=======
+    if not os.path.exists(DOWNLOAD_DIR):
+        raise HTTPException(status_code=404, detail="Directory not found")
+
+    # Create a temporary directory to store the ZIP archive
+    temp_dir = "temp_download"
+    os.makedirs(temp_dir, exist_ok=True)
+
+    # Create a ZIP archive of the entire directory
+    zip_filename = os.path.join(temp_dir, "downloaded_files.zip")
+    shutil.make_archive(os.path.splitext(zip_filename)[0], 'zip', DOWNLOAD_DIR)
+
+    # Read the ZIP archive into a BytesIO object
+    with open(zip_filename, "rb") as f:
+        zip_data = BytesIO(f.read())
+
+    # Remove the temporary directory
+    shutil.rmtree(temp_dir)
+
+    # Return the ZIP archive as a StreamingResponse
+    return StreamingResponse(zip_data, media_type="application/zip", headers={"Content-Disposition": "attachment; filename=downloaded_files.zip"})
+>>>>>>> dfccd0eaafe25f5bdca94086b9a9cdeb88d24da7
 
 
 @app.post("/upload/")
