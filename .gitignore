@@ -5,3 +5,5 @@ spleeter/vocadb_model
 spleeter/cache
 spleeter/results
 spleeter/test_audio
+spleeter/cache_voca_mus
+spleeter/voca_mus_model

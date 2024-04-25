@@ -6,3 +6,5 @@ spleeter separate -o results/melan_90k -p spleeter:4stems test_audio/melancholic
 spleeter separate -o results/raspberry_90k -p spleeter:4stems test_audio/raspberry_monster_mixture.wav
 spleeter separate -o results/amano_90k -p spleeter:4stems test_audio/amanojaku_mixture.wav
 spleeter separate -o results/melt_100k -p spleeter:4stems test_audio/melt_mixture.wav
+
+python -m spleeter train -p configs/voca_mus_config.json -d C:/musdb18hq --verbose
