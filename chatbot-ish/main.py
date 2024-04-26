@@ -6,10 +6,14 @@ from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 from typing import List
 
+import run_spleeter
+
 # Setup directory for file uploads
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FILE_DIR = os.path.join(BASE_DIR, "uploaded_files")
 os.makedirs(FILE_DIR, exist_ok=True)  # Ensure directory exists
+
+AUDIO_FILENAME = ''
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -36,7 +40,6 @@ async def download_file(filename: str, disposition: str = Query("attachment", en
         headers={"Content-Disposition": f"{disposition}; filename={filename}"}
     )
 
-
 @app.post("/upload/")
 async def handle_file_upload(file: UploadFile = File(...)):
     file_extension = file.filename.split(".")[-1].lower()
@@ -45,8 +48,20 @@ async def handle_file_upload(file: UploadFile = File(...)):
     file_location = os.path.join(FILE_DIR, file.filename)
     with open(file_location, "wb+") as file_object:
         file_object.write(await file.read())
+        print(f"File '{file.filename}' saved at '{file_location}'")
+    AUDIO_FILENAME = file.filename
     return {"info": f"File '{file.filename}' saved at '{file_location}'"}
 
+@app.post("/separation/")
+async def audio_separation(filename: str = AUDIO_FILENAME):
+    message = 'separation failed'
+    try:
+        run_spleeter.run_spleeter(filename)
+        message = 'done'
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    
+    return message
 
 @app.get("/search/")
 async def search_files(query: str):
@@ -71,6 +86,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
         if data == "1":
             await websocket.send_text("You selected Audio Separation. Please upload your file.")
+            # await websocket.send_text(f"uploaded {AUDIO_FILENAME}.")
             # Continue with file upload handling
 
         elif data == "2":
@@ -97,7 +113,7 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_text(f"Unrecognized option: {data}. Please select 1, 2, or 3.")
             continue
 
-        await websocket.send_text("Do you want to perform another operation? (yes/no)")
+        # await websocket.send_text("Do you want to perform another operation? (yes/no)")
         continue_operation = await websocket.receive_text()
         if continue_operation.lower() != 'yes':
             await websocket.send_text("Thank you for using our service. Goodbye!")
