@@ -94,31 +94,65 @@
 
     <script>
         var ws = new WebSocket("ws://localhost:8000/ws");
+        
         ws.onopen = function () {
             console.log("Connected to the WebSocket server");
         };
-        ws.onmessage = function (event) {
-            var messages = document.getElementById("messages");
-            var message = document.createElement("li");
-            message.classList.add("received");
-            message.textContent = event.data;
-            messages.appendChild(message);
 
-            if (event.data.includes("Please upload your file")) {
-                document.getElementById("uploadForm").style.display = "flex";
-            }
+        ws.onmessage = function (event) {
+            receiveMessage(event.data);
         };
+
+        function receiveMessage(message) {
+            var messages = document.getElementById("messages");
+            var messageElement = document.createElement("li");
+            messageElement.classList.add("received");
+            messageElement.textContent = message;
+            messages.appendChild(messageElement);
+
+            // Show upload form if the server requests a file upload
+            if (message.includes("Please upload your file")) {
+                document.getElementById("uploadForm").style.display = "flex";
+            } else if (message.includes("Wait for separation")) {
+                // Optionally change UI to show loading or processing status
+                document.getElementById("uploadForm").style.display = "none"; // Hide upload form during processing
+                showProcessingIndicator(); // Show a processing indicator to the user
+            } else if (message.includes("Separation completed")) {
+                // Handle completion of processing
+                hideProcessingIndicator(); // Hide the processing indicator
+                alert("File processing completed successfully!"); // Notify user
+            }
+        }
 
         function sendMessage(event) {
             var input = document.getElementById("messageText");
             ws.send(input.value);
-            var messages = document.getElementById("messages");
-            var message = document.createElement("li");
-            message.classList.add("sent");
-            message.textContent = input.value;
-            messages.appendChild(message);
+            addMessageToDisplay(input.value, 'sent');
             input.value = "";
             event.preventDefault();
+        }
+
+        function addMessageToDisplay(text, type) {
+            var messages = document.getElementById("messages");
+            var messageElement = document.createElement("li");
+            messageElement.classList.add(type);
+            messageElement.textContent = text;
+            messages.appendChild(messageElement);
+        }
+        
+        function showProcessingIndicator() {
+            // This function could manipulate the DOM to show a spinner or processing message
+            var processingIndicator = document.createElement("div");
+            processingIndicator.setAttribute("id", "processingIndicator");
+            processingIndicator.textContent = "Processing...";
+            document.body.appendChild(processingIndicator);
+        }
+
+        function hideProcessingIndicator() {
+            var processingIndicator = document.getElementById("processingIndicator");
+            if (processingIndicator) {
+                document.body.removeChild(processingIndicator);
+            }
         }
 
         function uploadFile() {
@@ -131,7 +165,7 @@
             .then(data => {
                 console.log('Success:', data);
                 var uploadedFilename = data.info.split("'")[1]; // Extract filename from response
-                window.location.href = `/download/${uploadedFilename}`; // Redirect to download
+                ws.send("uploaded:" + uploadedFilename); // Notify WebSocket server about the upload
             })
             .catch((error) => {
                 console.error('Error:', error);
