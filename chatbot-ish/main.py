@@ -124,11 +124,32 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_text("No file uploaded.")
 
         elif data == "2":
-            # Additional logic for options 2 and 3
-            pass
+            await websocket.send_text("You selected Finding Info. Please enter the song name or part of it to search.")
+            song_query = await websocket.receive_text()
+            try:
+                search_results = await search_song_vocadb(song_query)
+                if not search_results:
+                    await websocket.send_text("No matching songs found.")
+                else:
+                    result_messages = "\n".join(
+                        [f"{song['name']} by {', '.join(artist['name'] for artist in song['artists'])}" for song in search_results])
+                    await websocket.send_text(f"Found songs:\n{result_messages}")
+            except httpx.ConnectError as e:
+                await websocket.send_text(f"Could not connect to VocaDB API: {str(e)}")
+            except Exception as e:
+                await websocket.send_text(f"Error during search: {str(e)}")
 
+        elif data == "3":
+            await websocket.send_text("You selected Recommend New Songs.")
+            # Implement recommendation logic here
+
+        else:
+            await websocket.send_text(f"Unrecognized option: {data}. Please select 1, 2, or 3.")
+            continue
+
+        # await websocket.send_text("Do you want to perform another operation? (yes/no)")
         continue_operation = await websocket.receive_text()
-        if continue_operation.lower() != "yes":
+        if continue_operation.lower() != 'yes':
             await websocket.send_text("Thank you for using our service. Goodbye!")
             break
 
@@ -166,4 +187,5 @@ if __name__ == "__main__":
 
     # Optionally test the VocaDB connection when the script runs
     test_vocadb_api()  # Consider commenting this out in production
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="debug", reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000,
+                log_level="debug", reload=True)
