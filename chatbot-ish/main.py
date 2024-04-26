@@ -107,14 +107,18 @@ async def websocket_endpoint(websocket: WebSocket):
                 )  # Inform user to wait
 
                 # Perform the audio separation here
-                try:
-                    # Assuming 'run_spleeter' is a function that takes a filename and processes it
-                    await run_spleeter.run_spleeter(filename)
+                # try:
+                # Assuming 'run_spleeter' is a function that takes a filename and processes it
+                spl = run_spleeter.run_spleeter(filename)
+
+                if spl == 1:
                     await websocket.send_text("Separation completed successfully.")
-                except Exception as e:
-                    await websocket.send_text(
-                        f"An error occurred during separation: {str(e)}"
-                    )
+                else:
+                    await websocket.send_text("asd;kljjffals;kjdflk;a")
+                # except Exception as e:
+                #     await websocket.send_text(
+                #         f"An error occurred during separation: {str(e)}"
+                #     )
 
             else:
                 await websocket.send_text("No file uploaded.")

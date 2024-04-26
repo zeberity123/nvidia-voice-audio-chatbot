@@ -113,15 +113,15 @@
             // Show upload form if the server requests a file upload
             if (message.includes("Please upload your file")) {
                 document.getElementById("uploadForm").style.display = "flex";
-            } else if (message.includes("Wait for separation")) {
-                // Optionally change UI to show loading or processing status
-                document.getElementById("uploadForm").style.display = "none"; // Hide upload form during processing
-                showProcessingIndicator(); // Show a processing indicator to the user
-            } else if (message.includes("Separation completed")) {
-                // Handle completion of processing
-                hideProcessingIndicator(); // Hide the processing indicator
-                alert("File processing completed successfully!"); // Notify user
-            }
+            } 
+            if (message.includes("asd;kljjffals;kjdflk;a")) {
+            // This should be replaced with a more descriptive error message
+            addMessageToDisplay("A specific error occurred, please check the details or try again.");
+            } 
+            if (message.includes("An error occurred during separation:")) {
+            // This should be replaced with a more descriptive error message
+            addMessageToDisplay("A specific error occurred, please check the details or try again.");
+            } 
         }
 
         function sendMessage(event) {
@@ -139,21 +139,7 @@
             messageElement.textContent = text;
             messages.appendChild(messageElement);
         }
-        
-        function showProcessingIndicator() {
-            // This function could manipulate the DOM to show a spinner or processing message
-            var processingIndicator = document.createElement("div");
-            processingIndicator.setAttribute("id", "processingIndicator");
-            processingIndicator.textContent = "Processing...";
-            document.body.appendChild(processingIndicator);
-        }
 
-        function hideProcessingIndicator() {
-            var processingIndicator = document.getElementById("processingIndicator");
-            if (processingIndicator) {
-                document.body.removeChild(processingIndicator);
-            }
-        }
 
         function uploadFile() {
             var formData = new FormData(document.getElementById("uploadForm"));
