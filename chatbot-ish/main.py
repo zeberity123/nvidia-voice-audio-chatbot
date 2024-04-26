@@ -1,20 +1,28 @@
-import os
-import uuid
-import httpx
-from fastapi import FastAPI, WebSocket, Request, File, UploadFile, HTTPException, Query
+import shutil
 from fastapi.responses import FileResponse
+import os
+import httpx
+from fastapi import FastAPI, WebSocket, Request, File, UploadFile, HTTPException, Response
+from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from typing import List
-
+import asyncio
 import run_spleeter
-
-# Setup directory for file uploads
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FILE_DIR = os.path.join(BASE_DIR, "uploaded_files")
-os.makedirs(FILE_DIR, exist_ok=True)  # Ensure directory exists
+import zipfile
+from fastapi import Path
 
 
 app = FastAPI()
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FILE_DIR = os.path.join(BASE_DIR, "uploaded_files")
+DOWN_DIR = os.path.join(BASE_DIR, "processed_files")
+
+
+os.makedirs(FILE_DIR, exist_ok=True)
+
+
 templates = Jinja2Templates(directory="templates")
 
 
@@ -30,18 +38,37 @@ async def list_files():
     ]
 
 
+@app.get("/download/")
+async def download_files():
+    # List all files in the DOWN_DIR directory
+    files_list = [
+        f for f in os.listdir(DOWN_DIR) if os.path.isfile(os.path.join(DOWN_DIR, f))
+    ]
+    if not files_list:
+        raise HTTPException(status_code=404, detail="No files found")
+    print(files_list)
+    return files_list
+
+
+@app.get("/download/all")
+async def download_all_files():
+    zip_path = os.path.join(DOWN_DIR, "all_processed_files.zip")
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for f in os.listdir(DOWN_DIR):
+            file_path = os.path.join(DOWN_DIR, f)
+            if os.path.isfile(file_path):
+                zipf.write(file_path, arcname=f)
+
+    return FileResponse(path=zip_path, media_type='application/octet-stream', filename="all_processed_files.zip", headers={"Content-Disposition": "attachment; filename=all_processed_files.zip"})
+
+
 @app.get("/download/{filename}")
-async def download_file(
-    filename: str, disposition: str = Query("attachment", enum=["inline", "attachment"])
-):
-    file_path = os.path.join(FILE_DIR, filename)
-    if not os.path.exists(file_path):
+async def download_file(filename: str):
+    file_path = os.path.join(DOWN_DIR, filename)
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return FileResponse(path=file_path, filename=filename, media_type='application/octet-stream')
+    else:
         raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(
-        file_path,
-        filename=filename,
-        headers={"Content-Disposition": f"{disposition}; filename={filename}"},
-    )
 
 
 @app.post("/upload/")
@@ -55,18 +82,6 @@ async def handle_file_upload(file: UploadFile = File(...)):
         print(f"File '{file.filename}' saved at '{file_location}'")
     AUDIO_FILENAME = file.filename
     return {"info": f"File '{file.filename}' saved at '{file_location}'"}
-
-
-# @app.post("/separation/")
-# async def audio_separation(filename: str = AUDIO_FILENAME):
-#     message = "separation failed"
-#     try:
-#         run_spleeter.run_spleeter(filename)
-#         message = "done"
-#     except Exception as e:
-#         print(f"An error occurred: {e}")
-
-#     return message
 
 
 @app.get("/search/")
@@ -96,29 +111,23 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_text(
                 "You selected Audio Separation. Please upload your file."
             )
-            # Wait to receive the filename from the client
             filename_data = await websocket.receive_text()
 
             if filename_data.startswith("uploaded:"):
                 filename = filename_data.split("uploaded:")[1]
                 await websocket.send_text(f"You've uploaded {filename}.")
                 await websocket.send_text(
-                    "Wait for separation..."
-                )  # Inform user to wait
-
-                # Perform the audio separation here
-                # try:
-                # Assuming 'run_spleeter' is a function that takes a filename and processes it
+                    "Wait for Separation..."
+                )
                 spl = run_spleeter.run_spleeter(filename)
 
                 if spl == 1:
-                    await websocket.send_text("Separation completed successfully.")
+                    await websocket.send_text("An error occurred during separation.")
                 else:
-                    await websocket.send_text("asd;kljjffals;kjdflk;a")
-                # except Exception as e:
-                #     await websocket.send_text(
-                #         f"An error occurred during separation: {str(e)}"
-                #     )
+                    await websocket.send_text("Seperation Complete. Download will start soon.")
+                    # Wait for a short delay before sending the download URL
+                    await asyncio.sleep(2)
+                    await websocket.send_text("Downloading files.")
 
             else:
                 await websocket.send_text("No file uploaded.")
@@ -141,7 +150,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
         elif data == "3":
             await websocket.send_text("You selected Recommend New Songs.")
-            # Implement recommendation logic here
 
         else:
             await websocket.send_text(f"Unrecognized option: {data}. Please select 1, 2, or 3.")
@@ -157,7 +165,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 async def search_song_vocadb(query: str) -> List[dict]:
-    url = "https://vocadb.net/api/songs"  # Adjust to the actual VocaDB API URL
+    url = "https://vocadb.net/api/songs/"
     params = {"query": query, "fields": "Artists", "lang": "English"}
     async with httpx.AsyncClient() as client:
         response = await client.get(url, params=params)
@@ -166,7 +174,7 @@ async def search_song_vocadb(query: str) -> List[dict]:
 
 
 def test_vocadb_api():
-    # Example: Adjusted to hypothetical public API endpoint
+
     url = "https://api.vocadb.net/api/songs"
     params = {"query": "test song", "fields": "Artists", "lang": "English"}
     try:
@@ -185,7 +193,6 @@ def test_vocadb_api():
 if __name__ == "__main__":
     import uvicorn
 
-    # Optionally test the VocaDB connection when the script runs
-    test_vocadb_api()  # Consider commenting this out in production
+    test_vocadb_api()
     uvicorn.run("main:app", host="127.0.0.1", port=8000,
                 log_level="debug", reload=True)

@@ -1,162 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chatbot</title>
     <link rel="stylesheet" href="../static/styles.css" />
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .chat-container {
-            width: 360px;
-            height: 80vh;
-            background-color: white;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        #messages {
-            list-style: none;
-            padding: 20px;
-            overflow-y: auto;
-            height: calc(80vh - 60px);
-            margin: 0;
-        }
-        #messages li {
-            margin-bottom: 10px;
-            border-radius: 20px;
-            padding: 10px 20px;
-            color: white;
-            line-height: 1.4;
-        }
-        #messages li.sent {
-            background-color: #0b93f6;
-            align-self: flex-end;
-            max-width: 80%;
-        }
-        #messages li.received {
-            background-color: #e5e5ea;
-            color: black;
-            align-self: flex-start;
-            max-width: 80%;
-        }
-        form {
-            display: flex;
-            padding: 10px;
-            border-top: 1px solid #ccc;
-        }
-        input[type="text"],
-        input[type="file"] {
-            flex: 1;
-            padding: 10px;
-            margin-right: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #0b93f6;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #uploadForm {
-            display: none;
-            justify-content: space-between;
-            padding: 10px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .chat-container {
+        width: 360px;
+        height: 80vh;
+        background-color: white;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      #messages {
+        list-style: none;
+        padding: 20px;
+        overflow-y: auto;
+        height: calc(80vh - 60px);
+        margin: 0;
+      }
+      #messages li {
+        margin-bottom: 10px;
+        border-radius: 20px;
+        padding: 10px 20px;
+        color: white;
+        line-height: 1.4;
+      }
+      #messages li.sent {
+        background-color: #0b93f6;
+        align-self: flex-end;
+        max-width: 80%;
+      }
+      #messages li.received {
+        background-color: #e5e5ea;
+        color: black;
+        align-self: flex-start;
+        max-width: 80%;
+      }
+      form {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #ccc;
+      }
+      input[type="text"],
+      input[type="file"] {
+        flex: 1;
+        padding: 10px;
+        margin-right: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #0b93f6;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      #uploadForm {
+        display: none;
+        justify-content: space-between;
+        padding: 10px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="chat-container">
-        <ul id="messages"></ul>
-        <form id="messageForm" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off" placeholder="Type your message..." />
-            <button type="submit">Send</button>
-        </form>
-        <form id="uploadForm">
-            <input type="file" id="file" name="file" accept=".wav, .mp3" required />
-            <button type="button" onclick="uploadFile()">Upload</button>
-        </form>
+      <ul id="messages"></ul>
+      <form id="messageForm" onsubmit="sendMessage(event)">
+        <input
+          type="text"
+          id="messageText"
+          autocomplete="off"
+          placeholder="Type your message..."
+        />
+        <button type="submit">Send</button>
+      </form>
+      <form id="uploadForm">
+        <input type="file" id="file" name="file" accept=".wav, .mp3" required />
+        <button type="button" onclick="uploadFile()">Upload</button>
+      </form>
     </div>
 
     <script>
-        var ws = new WebSocket("ws://localhost:8000/ws");
-        
-        ws.onopen = function () {
-            console.log("Connected to the WebSocket server");
-        };
+      var ws = new WebSocket("ws://localhost:8000/ws");
 
-        ws.onmessage = function (event) {
-            receiveMessage(event.data);
-        };
+      ws.onopen = function () {
+        console.log("Connected to the WebSocket server");
+      };
 
-        function receiveMessage(message) {
-            var messages = document.getElementById("messages");
-            var messageElement = document.createElement("li");
-            messageElement.classList.add("received");
-            messageElement.textContent = message;
-            messages.appendChild(messageElement);
+      ws.onmessage = function (event) {
+        receiveMessage(event.data);
+      };
 
-            // Show upload form if the server requests a file upload
-            if (message.includes("Please upload your file")) {
-                document.getElementById("uploadForm").style.display = "flex";
-            } 
-            if (message.includes("asd;kljjffals;kjdflk;a")) {
-            // This should be replaced with a more descriptive error message
-            addMessageToDisplay("A specific error occurred, please check the details or try again.");
-            } 
-            if (message.includes("An error occurred during separation:")) {
-            // This should be replaced with a more descriptive error message
-            addMessageToDisplay("A specific error occurred, please check the details or try again.");
-            } 
+      function receiveMessage(message) {
+        var messages = document.getElementById("messages");
+        var messageElement = document.createElement("li");
+        messageElement.classList.add("received");
+        messageElement.textContent = message;
+        messages.appendChild(messageElement);
+
+        if (message.includes("Please upload your file")) {
+          document.getElementById("uploadForm").style.display = "flex";
+        }
+        if (
+          message.includes("Separation Completed. Download will start soon.")
+        ) {
+          addMessageToDisplay(
+            "Separation Completed. Download will start soon."
+          );
+        }
+        if (message.startsWith("Downloading files.")) {
+          addMessageToDisplay("Downloading files.");
+          window.location.href = "http://127.0.0.1:8000/download/all/";
         }
 
-        function sendMessage(event) {
-            var input = document.getElementById("messageText");
-            ws.send(input.value);
-            addMessageToDisplay(input.value, 'sent');
-            input.value = "";
-            event.preventDefault();
+        if (message.includes("An error occurred during separation:")) {
+          addMessageToDisplay(
+            "A specific error occurred, please check the details or try again."
+          );
         }
+      }
 
-        function addMessageToDisplay(text, type) {
-            var messages = document.getElementById("messages");
-            var messageElement = document.createElement("li");
-            messageElement.classList.add(type);
-            messageElement.textContent = text;
-            messages.appendChild(messageElement);
-        }
+      function sendMessage(event) {
+        var input = document.getElementById("messageText");
+        ws.send(input.value);
+        addMessageToDisplay(input.value, "sent");
+        input.value = "";
+        event.preventDefault();
+      }
 
+      function addMessageToDisplay(text, type) {
+        var messages = document.getElementById("messages");
+        var messageElement = document.createElement("li");
+        messageElement.classList.add(type);
+        messageElement.textContent = text;
+        messages.appendChild(messageElement);
+      }
 
-        function uploadFile() {
-            var formData = new FormData(document.getElementById("uploadForm"));
-            fetch('/upload/', {
-                method: 'POST',
-                body: formData,
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                var uploadedFilename = data.info.split("'")[1]; // Extract filename from response
-                ws.send("uploaded:" + uploadedFilename); // Notify WebSocket server about the upload
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        }
+      function uploadFile() {
+        var formData = new FormData(document.getElementById("uploadForm"));
+        fetch("/upload/", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Success:", data);
+            var uploadedFilename = data.info.split("'")[1]; // Extract filename from response
+            ws.send("uploaded:" + uploadedFilename); // Notify WebSocket server about the upload
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
     </script>
-</body>
+  </body>
 </html>

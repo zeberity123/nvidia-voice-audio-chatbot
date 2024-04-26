@@ -11,13 +11,14 @@ def run_spleeter(filename):
 
     for song_name in song_names:
         name_split = song_name.split(".")[0]
-        pre_folder = name_split[:-7]
+        pre_folder = name_split[:]
 
         out_loc = f"processed_files/"
         in_loc = f"uploaded_files/{song_name}"
 
         commands = [
-            ["spleeter", "separate", "-o", out_loc, "-p", "spleeter:4stems", in_loc]
+            ["spleeter", "separate", "-o", out_loc,
+                "-p", "spleeter:4stems", in_loc]
         ]
 
         for i in instruments:
