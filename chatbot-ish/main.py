@@ -158,11 +158,17 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_text(f"Unrecognized option: {data}. Please select 1, 2, or 3.")
             continue
 
-        # await websocket.send_text("Do you want to perform another operation? (yes/no)")
+        # Ask if they want to continue with another service
+        await websocket.send_text("Do you want to continue with another service? (yes/no)")
         continue_operation = await websocket.receive_text()
         if continue_operation.lower() != 'yes':
-            await websocket.send_text("Thank you for using our service. Goodbye!")
-            break
+            await websocket.send_text("Do you want to restart with a different option or file? (yes/no)")
+            restart_choice = await websocket.receive_text()
+            if restart_choice.lower() == 'yes':
+                continue  # Restart the loop
+            else:
+                await websocket.send_text("Thank you for using our service. Goodbye!")
+                break  # Exit the loop
 
     await websocket.close()
 
