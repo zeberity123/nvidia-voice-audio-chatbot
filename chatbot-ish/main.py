@@ -107,7 +107,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 async def search_song_vocadb(query: str) -> List[dict]:
-    url = "http://localhost/api/songs"  # Adjust to the actual VocaDB API URL
+    url = "http://vocadb.net/api/songs"  # Adjust to the actual VocaDB API URL
     params = {
         'query': query,
         'fields': 'Artists',
