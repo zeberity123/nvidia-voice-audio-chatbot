@@ -52,14 +52,17 @@ async def download_files():
 
 @app.get("/download/all")
 async def download_all_files():
-    zip_path = os.path.join(DOWN_DIR, "all_processed_files.zip")
+    des_name = "all_processed_files.zip"
+    zip_path = os.path.join(DOWN_DIR, des_name)
+
     with zipfile.ZipFile(zip_path, 'w') as zipf:
         for f in os.listdir(DOWN_DIR):
             file_path = os.path.join(DOWN_DIR, f)
-            if os.path.isfile(file_path):
+            # Ensure the current file is not the zip file being created
+            if os.path.isfile(file_path) and f != des_name:
                 zipf.write(file_path, arcname=f)
 
-    return FileResponse(path=zip_path, media_type='application/octet-stream', filename="all_processed_files.zip", headers={"Content-Disposition": "attachment; filename=all_processed_files.zip"})
+    return FileResponse(path=zip_path, filename=des_name, media_type='application/octet-stream')
 
 
 @app.get("/download/{filename}")
