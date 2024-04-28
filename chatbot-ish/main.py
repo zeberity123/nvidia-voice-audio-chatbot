@@ -102,11 +102,14 @@ async def search_files(query: str):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-
+    await websocket.send_text(
+        "Welcome to the oooo service!"
+    )
     while True:  # Start of the main interaction loop
         # Present service options to the user at the start of each loop iteration
+
         await websocket.send_text(
-            "Welcome to the audio service! Choose an option:\n"
+            "Choose an option:\n"
             "1. Audio Separation\n"
             "2. Finding Info\n"
             "3. Recommend New Songs"

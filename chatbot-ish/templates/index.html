@@ -112,7 +112,7 @@
         var messages = document.getElementById("messages");
         var messageElement = document.createElement("li");
         messageElement.classList.add("received");
-        messageElement.textContent = message;
+        messageElement.innerHTML = message.replace(/\n/g, "<br>");
         messages.appendChild(messageElement);
 
         if (message.includes("Please upload your file")) {
