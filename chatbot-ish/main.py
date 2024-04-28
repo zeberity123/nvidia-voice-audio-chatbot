@@ -102,36 +102,34 @@ async def search_files(query: str):
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    await websocket.send_text("Welcome to the audio service!")
-    await websocket.send_text(
-        "Choose an option:\n1. Audio Separation\n2. Finding Info\n3. Recommend New Songs"
-    )
 
-    while True:
+    while True:  # Start of the main interaction loop
+        # Present service options to the user at the start of each loop iteration
+        await websocket.send_text(
+            "Welcome to the audio service! Choose an option:\n"
+            "1. Audio Separation\n"
+            "2. Finding Info\n"
+            "3. Recommend New Songs"
+        )
+
         data = await websocket.receive_text()
 
         if data == "1":
-            await websocket.send_text(
-                "You selected Audio Separation. Please upload your file."
-            )
+            await websocket.send_text("You selected Audio Separation. Please upload your file.")
             filename_data = await websocket.receive_text()
 
             if filename_data.startswith("uploaded:"):
                 filename = filename_data.split("uploaded:")[1]
                 await websocket.send_text(f"You've uploaded {filename}.")
-                await websocket.send_text(
-                    "Wait for Separation..."
-                )
+                await websocket.send_text("Wait for Separation...")
                 spl = run_spleeter.run_spleeter(filename)
 
                 if spl == 1:
                     await websocket.send_text("An error occurred during separation.")
                 else:
-                    await websocket.send_text("Seperation Complete. Download will start soon.")
-                    # Wait for a short delay before sending the download URL
+                    await websocket.send_text("Separation Complete. Download will start soon.")
                     await asyncio.sleep(2)
                     await websocket.send_text("Downloading files.")
-
             else:
                 await websocket.send_text("No file uploaded.")
 
@@ -144,7 +142,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_text("No matching songs found.")
                 else:
                     result_messages = "\n".join(
-                        [f"{song['name']} by {', '.join(artist['name'] for artist in song['artists'])}" for song in search_results])
+                        [f"{song['name']} by {', '.join(artist['name'] for artist in song['artists'])}" for song in search_results]
+                    )
                     await websocket.send_text(f"Found songs:\n{result_messages}")
             except httpx.ConnectError as e:
                 await websocket.send_text(f"Could not connect to VocaDB API: {str(e)}")
@@ -159,16 +158,11 @@ async def websocket_endpoint(websocket: WebSocket):
             continue
 
         # Ask if they want to continue with another service
-        await websocket.send_text("Do you want to continue with another service? (yes/no)")
+        await websocket.send_text("Do you want to continue with another service with same audio? (yes/no)")
         continue_operation = await websocket.receive_text()
         if continue_operation.lower() != 'yes':
-            await websocket.send_text("Do you want to restart with a different option or file? (yes/no)")
-            restart_choice = await websocket.receive_text()
-            if restart_choice.lower() == 'yes':
-                continue  # Restart the loop
-            else:
-                await websocket.send_text("Thank you for using our service. Goodbye!")
-                break  # Exit the loop
+            await websocket.send_text("Thank you for using our service. Goodbye!")
+            break  # Exit the loop
 
     await websocket.close()
 
