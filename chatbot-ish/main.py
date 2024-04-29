@@ -1,4 +1,6 @@
 import shutil
+from ShazamAPI import Shazam
+from collections import Counter
 from fastapi.responses import FileResponse
 import os
 import httpx
@@ -19,8 +21,17 @@ import run_spleeter
 import zipfile
 from fastapi import Path
 from pathlib import Path
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from jinja2 import Environment, FileSystemLoader
+from pathlib import Path
+
 
 app = FastAPI()
+
+# Mount the static directory to serve CSS and JavaScript files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -30,15 +41,28 @@ BASE_DIR = Path(__file__).resolve().parent
 FILE_DIR = BASE_DIR / "uploaded_files"
 DOWN_DIR = BASE_DIR / "processed_files"
 
+# Create the templates environment
+templates_env = Environment(loader=FileSystemLoader("templates"))
+
 os.makedirs(FILE_DIR, exist_ok=True)
 
 
 templates = Jinja2Templates(directory="templates")
 
 
-@app.get("/")
-async def client(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    # Read the index.html template
+    template = templates_env.get_template("index.html")
+
+    # Construct the background URL here
+    background_url = "YOUR_BACKGROUND_URL_HERE"
+
+    # Render the template with the background URL
+    content = template.render(request=request, background_url=background_url)
+
+    # Return the rendered HTML content
+    return HTMLResponse(content=content)
 
 
 @app.get("/files/", response_model=List[str])
@@ -88,17 +112,50 @@ async def download_file(filename: str):
         raise HTTPException(status_code=404, detail="File not found")
 
 
-@app.post("/upload/")
+@app.post("/upload/")   # index.html: function uploadFile()
 async def handle_file_upload(file: UploadFile = File(...)):
+    # Read the content of the uploaded file
+    mp3_file_content_to_recognize = await file.read()
+
+    # Verify the file extension
     file_extension = file.filename.split(".")[-1].lower()
     if file_extension not in ["wav", "mp3"]:
         raise HTTPException(status_code=400, detail="Invalid file type")
+
+    # Save the file to the FILE_DIR directory
     file_location = os.path.join(FILE_DIR, file.filename)
     with open(file_location, "wb+") as file_object:
-        file_object.write(await file.read())
-        print(f"File '{file.filename}' saved at '{file_location}'")
-    AUDIO_FILENAME = file.filename
-    return {"info": f"File '{AUDIO_FILENAME}' saved at '{file_location}'"}
+
+        file_object.write(mp3_file_content_to_recognize)
+
+    # Initialize Shazam and recognize the song
+    shazam = Shazam(mp3_file_content_to_recognize)
+    recognize_generator = shazam.recognizeSong()
+
+    # Initialize an empty list to store all background image URLs
+    urls = []
+
+    for _ in range(3):
+        result = next(recognize_generator)
+        track_info = result[1]['track']
+        # Check if 'images' key exists before accessing it
+        if 'images' in track_info:
+            background_url = track_info['images'].get('background')
+            if background_url:
+                urls.append(background_url)
+                print("Title:", track_info['title'])
+                print("Background URL:", background_url)
+
+    # Count occurrences of each URL
+    url_counts = Counter(urls)
+
+    most_common_url = max(url_counts, key=url_counts.get)
+
+    print("Most common background image URL:", most_common_url)
+
+    return {"info": f"File '{file.filename}' saved at '{file_location}' {most_common_url}"}
+
+>>>>>> > 551d31c0a3ea3d2270253a23d90ce81af72116c4
 
 
 @app.get("/search/")
@@ -129,7 +186,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if filename_data.startswith("uploaded:"):
                 filename = filename_data.split("uploaded:")[1]
+                most_common_url = max(url_counts, key=url_counts.get)
                 await websocket.send_text(f"You've uploaded {filename}.")
+                await websocket.send_text(f"Background URL:{most_common_url}")
             else:
                 await websocket.send_text("No file uploaded.")
 
@@ -244,6 +303,11 @@ def test_vocadb_api():
 
 if __name__ == "__main__":
     import uvicorn
-
-    test_vocadb_api()
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="debug", reload=True)
+    # ngrok config add-authtoken 2flNtFOfdexQGUlcIL2UnT3Dw6r_2kRixkgRB1eb544955qP5
+    # import nest_asyncio
+    # from pyngrok import ngrok
+    # ngrok_tunnel = ngrok.connect(8000)
+    # print('URL:', ngrok_tunnel.public_url)
+    # nest_asyncio.apply()
+    uvicorn.run("main:app", host="127.0.0.1", port=8000,
+                log_level="debug", reload=True)
