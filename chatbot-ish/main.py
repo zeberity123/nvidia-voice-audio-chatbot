@@ -18,15 +18,17 @@ import asyncio
 import run_spleeter
 import zipfile
 from fastapi import Path
-
+from pathlib import Path
 
 app = FastAPI()
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FILE_DIR = os.path.join(BASE_DIR, "uploaded_files")
-DOWN_DIR = os.path.join(BASE_DIR, "processed_files")
-
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# FILE_DIR = os.path.join(BASE_DIR, "uploaded_files")
+# DOWN_DIR = os.path.join(BASE_DIR, "processed_files")
+BASE_DIR = Path(__file__).resolve().parent
+FILE_DIR = BASE_DIR / "uploaded_files"
+DOWN_DIR = BASE_DIR / "processed_files"
 
 os.makedirs(FILE_DIR, exist_ok=True)
 
