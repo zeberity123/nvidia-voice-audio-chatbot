@@ -117,17 +117,21 @@ async def search_files(query: str):
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     await websocket.send_text("Welcome to the oooo service!")
-    await websocket.send_text(
-        "Please upload your file. (mp3, wav format supported only)"
-    )
-    while True:
-        filename_data = await websocket.receive_text()
 
-        if filename_data.startswith("uploaded:"):
-            filename = filename_data.split("uploaded:")[1]
-            await websocket.send_text(f"You've uploaded {filename}.")
-        else:
-            await websocket.send_text("No file uploaded.")
+    reload = True
+    change_file = True
+    while reload:
+        if change_file:
+            await websocket.send_text(
+                "Please upload your file. (mp3, wav format supported only)"
+            )
+            filename_data = await websocket.receive_text()
+
+            if filename_data.startswith("uploaded:"):
+                filename = filename_data.split("uploaded:")[1]
+                await websocket.send_text(f"You've uploaded {filename}.")
+            else:
+                await websocket.send_text("No file uploaded.")
 
         await websocket.send_text(
             "Choose an option:\n"
@@ -190,20 +194,25 @@ async def websocket_endpoint(websocket: WebSocket):
         continue_operation = await websocket.receive_text()
         if continue_operation.lower() != "yes":
             await websocket.send_text("Thank you for using our service. Goodbye!")
+            reload = False
             await websocket.close()
             break
+
         elif continue_operation.lower() == "yes":
             await websocket.send_text("Continue with same file? (yes/no)")
             same_operation = await websocket.receive_text()
             if same_operation.lower() == "no":
+                reload = True
                 continue  # Go back to upload file
+
             elif same_operation.lower() == "yes":
-                await websocket.send_text(
-                    "Choose an option:\n"
-                    "1. Audio Separation\n"
-                    "2. Finding Info\n"
-                    "3. Recommend New Songs"
-                )
+                change_file = False
+                # await websocket.send_text(
+                #     "Choose an option:\n"
+                #     "1. Audio Separation\n"
+                #     "2. Finding Info\n"
+                #     "3. Recommend New Songs"
+                # )
                 continue  # Go back to choose option
 
 
