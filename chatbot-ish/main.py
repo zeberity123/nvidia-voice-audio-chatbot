@@ -98,7 +98,7 @@ async def handle_file_upload(file: UploadFile = File(...)):
         file_object.write(await file.read())
         print(f"File '{file.filename}' saved at '{file_location}'")
     AUDIO_FILENAME = file.filename
-    return {"info": f"File '{file.filename}' saved at '{file_location}'"}
+    return {"info": f"File '{AUDIO_FILENAME}' saved at '{file_location}'"}
 
 
 @app.get("/search/")
