@@ -124,10 +124,37 @@ async def handle_file_upload(file: UploadFile = File(...)):
     # Save the file to the FILE_DIR directory
     file_location = os.path.join(FILE_DIR, file.filename)
     with open(file_location, "wb+") as file_object:
-        file_object.write(await file.read())
-        print(f"File '{file.filename}' saved at '{file_location}'")
-    AUDIO_FILENAME = file.filename
-    return {"info": f"File '{file.filename}' saved at '{file_location}'"}
+
+        file_object.write(mp3_file_content_to_recognize)
+
+    # Initialize Shazam and recognize the song
+    shazam = Shazam(mp3_file_content_to_recognize)
+    recognize_generator = shazam.recognizeSong()
+
+    # Initialize an empty list to store all background image URLs
+    urls = []
+
+    for _ in range(3):
+        result = next(recognize_generator)
+        track_info = result[1]['track']
+        # Check if 'images' key exists before accessing it
+        if 'images' in track_info:
+            background_url = track_info['images'].get('background')
+            if background_url:
+                urls.append(background_url)
+                print("Title:", track_info['title'])
+                print("Background URL:", background_url)
+
+    # Count occurrences of each URL
+    url_counts = Counter(urls)
+
+    most_common_url = max(url_counts, key=url_counts.get)
+
+    print("Most common background image URL:", most_common_url)
+
+    return {"info": f"File '{file.filename}' saved at '{file_location}' {most_common_url}"}
+
+>>>>>> > 551d31c0a3ea3d2270253a23d90ce81af72116c4
 
 
 @app.get("/search/")
