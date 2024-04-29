@@ -13,7 +13,7 @@ def run_spleeter(filename):
         name_split = song_name.split(".")[0]
         pre_folder = name_split[:]
 
-        in_loc = f"{IN_LOC}{song_name}"
+        in_loc = f"{IN_LOC}/{song_name}"
 
         commands = [
             ["spleeter", "separate", "-o", OUT_LOC,
