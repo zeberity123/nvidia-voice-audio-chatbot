@@ -26,7 +26,7 @@ def run_spleeter(filename):
                 [
                     "mv",
                     f"{out_loc}/{name_split}/{i}.*",
-                    f"{out_loc}/{pre_folder}{i}.wav",
+                    f"{out_loc}/{pre_folder[:-7]}{i}.wav",
                 ]
             )
         commands.append(["rm", "-r", f"{out_loc}/{name_split}"])
