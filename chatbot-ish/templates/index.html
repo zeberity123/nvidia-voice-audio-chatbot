@@ -9,7 +9,9 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        background-color: #f4f4f9;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
         margin: 0;
         padding: 20px;
         display: flex;
@@ -98,6 +100,11 @@
     </div>
 
     <script>
+      // Function to change background image URL
+      function changeBackgroundImage(url) {
+        document.body.style.backgroundImage = `url(${url})`;
+      }
+
       var ws = new WebSocket("ws://localhost:8000/ws");
 
       ws.onopen = function () {
@@ -133,6 +140,10 @@
           addMessageToDisplay(
             "A specific error occurred, please check the details or try again."
           );
+        }
+        if (message.startsWith("Background URL:")) {
+          var url = message.split(":")[1].trim(); // Extract the URL
+          changeBackgroundImage(url); // Change background image
         }
       }
 
