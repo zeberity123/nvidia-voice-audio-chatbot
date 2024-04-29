@@ -155,8 +155,6 @@ async def handle_file_upload(file: UploadFile = File(...)):
 
     return {"info": f"File '{file.filename}' saved at '{file_location}' {most_common_url}"}
 
->>>>>> > 551d31c0a3ea3d2270253a23d90ce81af72116c4
-
 
 @app.get("/search/")
 async def search_files(query: str):
