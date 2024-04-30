@@ -133,11 +133,6 @@ async def handle_file_upload(file: UploadFile = File(...)):
 
     return {"info": f"File '{AUDIO_FILENAME}' saved at '{file_location}'"}
 
-
-
->>>>>> > 551d31c0a3ea3d2270253a23d90ce81af72116c4
-
-
 @app.get("/search/")
 async def search_files(query: str):
     matching_files = [
