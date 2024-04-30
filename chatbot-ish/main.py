@@ -47,6 +47,7 @@ templates_env = Environment(loader=FileSystemLoader("templates"))
 
 os.makedirs(FILE_DIR, exist_ok=True)
 
+AUDIO_FILENAME = ''
 
 templates = Jinja2Templates(directory="templates")
 
@@ -97,6 +98,8 @@ async def download_all_files():
             if os.path.isfile(file_path) and f != des_name:
                 zipf.write(file_path, arcname=f)
 
+    run_spleeter.delete_processed()
+
     return FileResponse(
         path=zip_path, filename=des_name, media_type="application/octet-stream"
     )
@@ -125,9 +128,10 @@ async def handle_file_upload(file: UploadFile = File(...)):
     with open(file_location, "wb+") as file_object:
         file_object.write(await file.read())
 
+    AUDIO_FILENAME = file.filename
     # background_url = shazam_search.bgr_image(f'{file_location}/{file.filename}')
 
-    return {"info": f"File '{file.filename}' saved at '{file_location}'"}
+    return {"info": f"File '{AUDIO_FILENAME}' saved at '{file_location}'"}
 
 
 
@@ -162,7 +166,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
             if filename_data.startswith("uploaded:"):
                 filename = filename_data.split("uploaded:")[1]
-                await websocket.send_text(f"You've uploaded {filename}.")
+                AUDIO_FILENAME = filename
+                await websocket.send_text(f"You've uploaded {AUDIO_FILENAME}.")
             else:
                 await websocket.send_text("No file uploaded.")
 
@@ -178,7 +183,7 @@ async def websocket_endpoint(websocket: WebSocket):
         if data == "1":
             await websocket.send_text("You selected Audio Separation.")
             await websocket.send_text("Wait for Separation...")
-            spl = run_spleeter.run_spleeter(filename)
+            spl = run_spleeter.run_spleeter(AUDIO_FILENAME)
 
             if spl == 1:
                 await websocket.send_text("An error occurred during separation.")
@@ -237,16 +242,14 @@ async def websocket_endpoint(websocket: WebSocket):
             same_operation = await websocket.receive_text()
             if same_operation.lower() == "no":
                 reload = True
+                change_file = True
+                run_spleeter.delete_uploaded(AUDIO_FILENAME)
+                AUDIO_FILENAME = ''
                 continue  # Go back to upload file
 
             elif same_operation.lower() == "yes":
+                reload = True
                 change_file = False
-                # await websocket.send_text(
-                #     "Choose an option:\n"
-                #     "1. Audio Separation\n"
-                #     "2. Finding Info\n"
-                #     "3. Recommend New Songs"
-                # )
                 continue  # Go back to choose option
 
 
@@ -284,4 +287,5 @@ if __name__ == "__main__":
     # ngrok_tunnel = ngrok.connect(8000)
     # print('URL:', ngrok_tunnel.public_url)
     # nest_asyncio.apply()
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, log_level="debug", reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8000,
+                log_level="debug", reload=True)
