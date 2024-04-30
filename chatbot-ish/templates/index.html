@@ -100,6 +100,7 @@
     </div>
 
     <script>
+
       // Function to change background image URL
       function changeBackgroundImage(url) {
         document.body.style.backgroundImage = `url(${url})`;
@@ -117,6 +118,7 @@
 
       function receiveMessage(message) {
         var messages = document.getElementById("messages");
+        messages.scrollTop = messages.scrollHeight;
         var messageElement = document.createElement("li");
         messageElement.classList.add("received");
         messageElement.innerHTML = message.replace(/\n/g, "<br>");
@@ -148,6 +150,7 @@
           var url = message.split(":")[1].trim(); // Extract the URL
           changeBackgroundImage(url); // Change background image
         }
+        messages.scrollTop = messages.scrollHeight;
       }
 
       function sendMessage(event) {
@@ -156,6 +159,8 @@
         addMessageToDisplay(input.value, "sent");
         input.value = "";
         event.preventDefault();
+        var messages = document.getElementById("messages");
+        messages.scrollTop = messages.scrollHeight;
       }
 
       function addMessageToDisplay(text, type) {
