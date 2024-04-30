@@ -1,18 +1,18 @@
-
-# use shazam to insert music and send cover image correctly
-# Shazam will be used for selection 2 only. And the image for the background changes should be used for unlikely artists.
-# Popular artists will have their image stored in a separate file and the artist name will be checked upon clicking the upload button
-# to check on the artist. This should probably be in a switch format. Shazam is slow enough so why waste more time finding the background image
-# for famous artists?
-# Make separate file for listing the information extracted from Shazam
-# Shazam will be used anyway during selection 2. So the background switch should also happen only in selection 2.
-# Finally, selection 2 atm needs you to insert the name of the song in order to search shazam. If you already uploaded the music then it should have
-# read the file name automatically. Make that possible.
 import os
+import re
 from ShazamAPI import Shazam
 import httpx
 
+def sanitize_filename(filename):
+    # Replace invalid characters with underscores
+    return re.sub(r'[\\/*?:"<>|]', '_', filename)
+
 def bgr_image(audio_file):
+    # Check if the file extension is supported (MP3 or WAV)
+    file_extension = os.path.splitext(audio_file)[1].lower()
+    if file_extension not in ['.mp3', '.wav']:
+        raise ValueError("Invalid file format. Supported formats: MP3, WAV")
+
     audio = open(audio_file, 'rb').read()
     # Initialize Shazam and recognize the song
     shazam = Shazam(audio)
@@ -28,8 +28,11 @@ def bgr_image(audio_file):
         background_url = track_info['images']
         artist = track_info['subtitle']
         if background_url:
-            print("Title:", track_info['title'])
-            results.append(track_info['title'])
+            title = track_info['title']
+            artist = artist.encode('utf-8').decode('cp949', 'ignore')  # Convert artist to cp949 encoding
+            title = title.encode('utf-8').decode('cp949', 'ignore')  # Convert title to cp949 encoding
+            print("Title:", title)
+            results.append(title)
             print("Artist:", artist)
             results.append(artist)
             background_image_url = background_url['coverarthq']
@@ -40,14 +43,16 @@ def bgr_image(audio_file):
             os.makedirs(info_dir, exist_ok=True)
             # Save the title and artist information to a text file in the info directory
             info_filename = os.path.join(info_dir, "info.txt")
-            with open(info_filename, 'w') as info_file:
-                info_file.write("Title: {}\n".format(track_info['title']))
+            with open(info_filename, 'w', encoding='utf-8') as info_file:  # Specify UTF-8 encoding
+                info_file.write("Title: {}\n".format(title))
                 info_file.write("Artist: {}\n".format(artist))
             #print("Title and artist information saved to:", info_filename)
             # Check if the artist is "Hatsune Miku"
             if artist != "Hatsune Miku":
-                # Save the background image to the info directory with the title as the filename
-                image_filename = os.path.join(info_dir, "{}.jpg".format(track_info['title']))
+                # Sanitize the title to create a valid filename
+                sanitized_title = sanitize_filename(title)
+                # Save the background image to the info directory with the sanitized title as the filename
+                image_filename = os.path.join(info_dir, "{}.jpg".format(sanitized_title))
                 with open(image_filename, 'wb') as img_file:
                     img_file.write(httpx.get(background_image_url).content)
                 #print("Background image saved to:", image_filename)
