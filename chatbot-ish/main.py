@@ -28,6 +28,9 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 
+# Importing the bgr_image function from shazam_search.py
+import glob
+from shazam_search import bgr_image
 
 app = FastAPI()
 
@@ -47,7 +50,6 @@ templates_env = Environment(loader=FileSystemLoader("templates"))
 
 os.makedirs(FILE_DIR, exist_ok=True)
 
-AUDIO_FILENAME = ''
 
 templates = Jinja2Templates(directory="templates")
 
@@ -98,8 +100,6 @@ async def download_all_files():
             if os.path.isfile(file_path) and f != des_name:
                 zipf.write(file_path, arcname=f)
 
-    run_spleeter.delete_processed()
-
     return FileResponse(
         path=zip_path, filename=des_name, media_type="application/octet-stream"
     )
@@ -115,6 +115,7 @@ async def download_file(filename: str):
     else:
         raise HTTPException(status_code=404, detail="File not found")
 
+
 @app.post("/upload/")   # index.html: function uploadFile()
 async def handle_file_upload(file: UploadFile = File(...)):
     # Read the content of the uploaded file
@@ -122,16 +123,18 @@ async def handle_file_upload(file: UploadFile = File(...)):
     file_extension = file.filename.split(".")[-1].lower()
     if file_extension not in ["wav", "mp3"]:
         raise HTTPException(status_code=400, detail="Invalid file type")
-    
+
     # Save the file to the FILE_DIR directory
     file_location = os.path.join(FILE_DIR, file.filename)
     with open(file_location, "wb+") as file_object:
         file_object.write(await file.read())
 
-    AUDIO_FILENAME = file.filename
     # background_url = shazam_search.bgr_image(f'{file_location}/{file.filename}')
 
-    return {"info": f"File '{AUDIO_FILENAME}' saved at '{file_location}'"}
+    return {"info": f"File '{file.filename}' saved at '{file_location}'"}
+
+
+
 
 @app.get("/search/")
 async def search_files(query: str):
@@ -157,15 +160,24 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_text(
                 "Please upload your file. (mp3, wav format supported only)"
             )
+            # as soon as the file is uploaded it should be sent to shazam_search.py to get the title, artist and background image
             filename_data = await websocket.receive_text()
 
             if filename_data.startswith("uploaded:"):
                 filename = filename_data.split("uploaded:")[1]
-                AUDIO_FILENAME = filename
-                await websocket.send_text(f"You've uploaded {AUDIO_FILENAME}.")
+                await websocket.send_text(f"You've uploaded {filename}. This is a temp file")
+                # Call the function to extract information using Shazam
+                info = bgr_image(filename)
+                title = info[0]
+                artist = info[1]
+                background_image_url = info[2]
+
+                # Send the extracted information back to the client
+                await websocket.send_text(f"Title: {title}")
+                await websocket.send_text(f"Artist: {artist}")
+                # await websocket.send_text(f"Background Image URL: {background_image_url}")
             else:
                 await websocket.send_text("No file uploaded.")
-
         await websocket.send_text(
             "Choose an option:\n"
             "1. Audio Separation\n"
@@ -178,7 +190,7 @@ async def websocket_endpoint(websocket: WebSocket):
         if data == "1":
             await websocket.send_text("You selected Audio Separation.")
             await websocket.send_text("Wait for Separation...")
-            spl = run_spleeter.run_spleeter(AUDIO_FILENAME)
+            spl = run_spleeter.run_spleeter(filename)
 
             if spl == 1:
                 await websocket.send_text("An error occurred during separation.")
@@ -191,10 +203,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 
 
         elif data == "2":
-            await websocket.send_text(
-                "You selected Finding Info. Please enter the song name or part of it to search."
-            )
-            song_query = await websocket.receive_text()
+            song_query = await websocket.send_text(f"Title: {title}")
+
             try:
                 search_results = await search_song_vocadb(song_query)
                 if not search_results:
@@ -211,6 +221,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_text(f"Could not connect to VocaDB API: {str(e)}")
             except Exception as e:
                 await websocket.send_text(f"Error during search: {str(e)}")
+
 
         elif data == "3":
             await websocket.send_text("You selected Recommend New Songs.")
@@ -237,14 +248,16 @@ async def websocket_endpoint(websocket: WebSocket):
             same_operation = await websocket.receive_text()
             if same_operation.lower() == "no":
                 reload = True
-                change_file = True
-                run_spleeter.delete_uploaded(AUDIO_FILENAME)
-                AUDIO_FILENAME = ''
                 continue  # Go back to upload file
 
             elif same_operation.lower() == "yes":
-                reload = True
                 change_file = False
+                # await websocket.send_text(
+                #     "Choose an option:\n"
+                #     "1. Audio Separation\n"
+                #     "2. Finding Info\n"
+                #     "3. Recommend New Songs"
+                # )
                 continue  # Go back to choose option
 
 
