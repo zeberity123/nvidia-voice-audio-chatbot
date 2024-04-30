@@ -280,11 +280,5 @@ def test_vocadb_api():
 
 if __name__ == "__main__":
     import uvicorn
-    # ngrok config add-authtoken 2flNtFOfdexQGUlcIL2UnT3Dw6r_2kRixkgRB1eb544955qP5
-    # import nest_asyncio
-    # from pyngrok import ngrok
-    # ngrok_tunnel = ngrok.connect(8000)
-    # print('URL:', ngrok_tunnel.public_url)
-    # nest_asyncio.apply()
-    uvicorn.run("main:app", host="127.0.0.1", port=8000,
+    uvicorn.run("main:app", host="0.0.0.0", workers=4, port=3939,
                 log_level="debug", reload=True)

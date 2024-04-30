@@ -125,6 +125,9 @@
         if (message.includes("Please upload your file")) {
           document.getElementById("uploadForm").style.display = "flex";
         }
+        if (message.includes("You've uploaded")) {
+          document.getElementById("uploadForm").style.display = "none";
+        }
         if (
           message.includes("Separation Completed. Download will start soon.")
         ) {
@@ -134,7 +137,7 @@
         }
         if (message.startsWith("Downloading files.")) {
           addMessageToDisplay("Downloading files.");
-          window.location.href = "http://127.0.0.1:8000/download/all/";
+          window.location.href = "http://localhost:8000/download/all/";
         }
         if (message.includes("An error occurred during separation:")) {
           addMessageToDisplay(
