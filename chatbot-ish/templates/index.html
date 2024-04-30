@@ -100,6 +100,7 @@
     </div>
 
     <script>
+
       // Function to change background image URL
       function changeBackgroundImage(url) {
         document.body.style.backgroundImage = `url(${url})`;
@@ -117,6 +118,7 @@
 
       function receiveMessage(message) {
         var messages = document.getElementById("messages");
+        messages.scrollTop = messages.scrollHeight;
         var messageElement = document.createElement("li");
         messageElement.classList.add("received");
         messageElement.innerHTML = message.replace(/\n/g, "<br>");
@@ -124,6 +126,9 @@
 
         if (message.includes("Please upload your file")) {
           document.getElementById("uploadForm").style.display = "flex";
+        }
+        if (message.includes("You've uploaded")) {
+          document.getElementById("uploadForm").style.display = "none";
         }
         if (
           message.includes("Separation Completed. Download will start soon.")
@@ -134,7 +139,7 @@
         }
         if (message.startsWith("Downloading files.")) {
           addMessageToDisplay("Downloading files.");
-          window.location.href = "http://127.0.0.1:8000/download/all/";
+          window.location.href = "http://localhost:8000/download/all/";
         }
         if (message.includes("An error occurred during separation:")) {
           addMessageToDisplay(
@@ -145,6 +150,7 @@
           var url = message.split(":")[1].trim(); // Extract the URL
           changeBackgroundImage(url); // Change background image
         }
+        messages.scrollTop = messages.scrollHeight;
       }
 
       function sendMessage(event) {
@@ -153,6 +159,8 @@
         addMessageToDisplay(input.value, "sent");
         input.value = "";
         event.preventDefault();
+        var messages = document.getElementById("messages");
+        messages.scrollTop = messages.scrollHeight;
       }
 
       function addMessageToDisplay(text, type) {
