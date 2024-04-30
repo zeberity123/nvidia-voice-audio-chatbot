@@ -33,7 +33,7 @@ def bgr_image(audio_file):
             print("Artist:", artist)
             results.append(artist)
             background_image_url = background_url['coverarthq']
-            print("Most common background image URL:", background_image_url)
+            #print("Most common background image URL:", background_image_url)
             results.append(background_image_url)
             # Create the info directory if it doesn't exist
             info_dir = os.path.join(os.path.dirname(audio_file), "info")
@@ -43,14 +43,14 @@ def bgr_image(audio_file):
             with open(info_filename, 'w') as info_file:
                 info_file.write("Title: {}\n".format(track_info['title']))
                 info_file.write("Artist: {}\n".format(artist))
-            print("Title and artist information saved to:", info_filename)
+            #print("Title and artist information saved to:", info_filename)
             # Check if the artist is "Hatsune Miku"
             if artist != "Hatsune Miku":
                 # Save the background image to the info directory with the title as the filename
                 image_filename = os.path.join(info_dir, "{}.jpg".format(track_info['title']))
                 with open(image_filename, 'wb') as img_file:
                     img_file.write(httpx.get(background_image_url).content)
-                print("Background image saved to:", image_filename)
+                #print("Background image saved to:", image_filename)
             else:
                 print("Background image not saved because the artist is Hatsune Miku")
 

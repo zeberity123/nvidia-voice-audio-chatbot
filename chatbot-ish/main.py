@@ -162,20 +162,24 @@ async def websocket_endpoint(websocket: WebSocket):
             )
             # as soon as the file is uploaded it should be sent to shazam_search.py to get the title, artist and background image
             filename_data = await websocket.receive_text()
+            print(filename_data)
 
             if filename_data.startswith("uploaded:"):
                 filename = filename_data.split("uploaded:")[1]
+                filename_without_extension = filename.split(".")[0] 
                 await websocket.send_text(f"You've uploaded {filename}. This is a temp file")
                 # Call the function to extract information using Shazam
                 info = bgr_image(filename)
                 title = info[0]
                 artist = info[1]
                 background_image_url = info[2]
+                print(background_image_url)
+                print(filename_without_extension)
 
                 # Send the extracted information back to the client
                 await websocket.send_text(f"Title: {title}")
                 await websocket.send_text(f"Artist: {artist}")
-                # await websocket.send_text(f"Background Image URL: {background_image_url}")
+                await websocket.send_text(f"Background Image URL: {background_image_url}")
             else:
                 await websocket.send_text("No file uploaded.")
         await websocket.send_text(
@@ -204,9 +208,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
         elif data == "2":
             song_query = await websocket.send_text(f"Title: {title}")
-
+            if background_image_url:
+                # Change the background image URL
+                await websocket.send_text(f"Background URL: {background_image_url}")
             try:
-                search_results = await search_song_vocadb(song_query)
+                search_results = await search_song_vocadb(filename_without_extension)
                 if not search_results:
                     await websocket.send_text("No matching songs found.")
                 else:
@@ -262,6 +268,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 async def search_song_vocadb(query: str) -> List[dict]:
+    print(query)
     url = "https://vocadb.net/api/songs/"
     params = {"query": query, "fields": "Artists", "lang": "English"}
     async with httpx.AsyncClient() as client:

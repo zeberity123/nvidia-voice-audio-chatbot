@@ -116,6 +116,7 @@
       };
 
       function receiveMessage(message) {
+        console.log("Received message:", message);
         var messages = document.getElementById("messages");
         var messageElement = document.createElement("li");
         messageElement.classList.add("received");
@@ -143,6 +144,7 @@
         }
         if (message.startsWith("Background URL:")) {
           var url = message.split(":")[1].trim(); // Extract the URL
+          console.log("Background URL:", url);
           changeBackgroundImage(url); // Change background image
         }
       }
@@ -154,7 +156,7 @@
         input.value = "";
         event.preventDefault();
       }
-
+    
       function addMessageToDisplay(text, type) {
         var messages = document.getElementById("messages");
         var messageElement = document.createElement("li");
