@@ -34,7 +34,11 @@ def run_spleeter(filename):
             subprocess.call(command)
 
 
-def delete_files(filename):
+def delete_processed():
+    command = ['rm', f"{OUT_LOC}/*.wav"]
+    subprocess.call(command)
+
+def delete_uploaded(filename):
     name_split = filename.split(".")[0]
-    command = ['rm', f"{OUT_LOC}/{name_split}*.wav"]
+    command = ['rm', f"{IN_LOC}/{name_split}*.wav"]
     subprocess.call(command)
