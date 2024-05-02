@@ -106,7 +106,7 @@
         document.body.style.backgroundImage = `url(${url})`;
       }
 
-      var ws = new WebSocket("ws://localhost:8000/ws");
+      var ws = new WebSocket("ws://192.168.0.14:3939/ws");
 
       ws.onopen = function () {
         console.log("Connected to the WebSocket server");
@@ -117,6 +117,7 @@
       };
 
       function receiveMessage(message) {
+        console.log("Received message:", message);
         var messages = document.getElementById("messages");
         messages.scrollTop = messages.scrollHeight;
         var messageElement = document.createElement("li");
@@ -139,7 +140,7 @@
         }
         if (message.startsWith("Downloading files.")) {
           addMessageToDisplay("Downloading files.");
-          window.location.href = "http://localhost:8000/download/all/";
+          window.location.href = "http://192.168.0.14:3939/download/all/";
         }
         if (message.includes("An error occurred during separation:")) {
           addMessageToDisplay(
@@ -148,6 +149,7 @@
         }
         if (message.startsWith("Background URL:")) {
           var url = message.split(":")[1].trim(); // Extract the URL
+          console.log("Background URL:", url);
           changeBackgroundImage(url); // Change background image
         }
         messages.scrollTop = messages.scrollHeight;
@@ -162,7 +164,7 @@
         var messages = document.getElementById("messages");
         messages.scrollTop = messages.scrollHeight;
       }
-
+    
       function addMessageToDisplay(text, type) {
         var messages = document.getElementById("messages");
         var messageElement = document.createElement("li");
@@ -189,4 +191,4 @@
       }
     </script>
   </body>
-</html>
+</html> 

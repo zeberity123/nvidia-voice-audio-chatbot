@@ -28,6 +28,9 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 
+# Importing the bgr_image function from shazam_search.py
+import glob
+from shazam_search import bgr_image
 
 app = FastAPI()
 
@@ -151,25 +154,39 @@ async def search_files(query: str):
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    
     await websocket.accept()
     await websocket.send_text("Welcome to the oooo service!")
 
+    title = ''
+    artist = ''
+    background_image_url = ''
+
     reload = True
     change_file = True
+
     while reload:
         if change_file:
             await websocket.send_text(
                 "Please upload your file. (mp3, wav format supported only)"
             )
+            # as soon as the file is uploaded it should be sent to shazam_search.py to get the title, artist and background image
             filename_data = await websocket.receive_text()
+            print(filename_data)
 
             if filename_data.startswith("uploaded:"):
                 filename = filename_data.split("uploaded:")[1]
                 AUDIO_FILENAME = filename
                 await websocket.send_text(f"You've uploaded {AUDIO_FILENAME}.")
+                # Call the function to extract information using Shazam
+                info = shazam_search.bgr_image(AUDIO_FILENAME)
+                title = info[0]
+                artist = info[1]
+                background_image_url = info[2]
+
+
             else:
                 await websocket.send_text("No file uploaded.")
-
         await websocket.send_text(
             "Choose an option:\n"
             "1. Audio Separation\n"
@@ -195,26 +212,35 @@ async def websocket_endpoint(websocket: WebSocket):
                 
 
         elif data == "2":
-            await websocket.send_text(
-                "You selected Finding Info. Please enter the song name or part of it to search."
-            )
-            song_query = await websocket.receive_text()
-            try:
-                search_results = await search_song_vocadb(song_query)
-                if not search_results:
-                    await websocket.send_text("No matching songs found.")
-                else:
-                    result_messages = "\n".join(
-                        [
-                            f"{song['name']} by {', '.join(artist['name'] for artist in song['artists'])}"
-                            for song in search_results
-                        ]
-                    )
-                    await websocket.send_text(f"Found songs:\n{result_messages}")
-            except httpx.ConnectError as e:
-                await websocket.send_text(f"Could not connect to VocaDB API: {str(e)}")
-            except Exception as e:
-                await websocket.send_text(f"Error during search: {str(e)}")
+            # Send the extracted information back to the client
+            await websocket.send_text(f"Title: {title}")
+            await websocket.send_text(f"Artist: {artist}")
+            # await websocket.send_text(f"Background Image URL: {background_image_url}")
+
+            await websocket.send_text("Would you like to use vocaDB? (yes/no)")
+            using_vocadb = await websocket.receive_text()
+
+            if using_vocadb == 'yes' or using_vocadb == 'y':
+                # song_query = await websocket.receive_text()
+
+                try:
+                    title = shazam_search.clean_song_title(title)
+                    search_results = await search_song_vocadb(title)
+                    if not search_results:
+                        await websocket.send_text("No matching songs found.")
+                    else:
+                        result_messages = "\n".join(
+                            [
+                                f"{song['name']} by {', '.join(artist['name'] for artist in song['artists'])}"
+                                for song in search_results
+                            ]
+                        )
+                        await websocket.send_text(f"Found songs:\n{result_messages}")
+                except httpx.ConnectError as e:
+                    await websocket.send_text(f"Could not connect to VocaDB API: {str(e)}")
+                except Exception as e:
+                    await websocket.send_text(f"Error during search: {str(e)}")
+
 
         elif data == "3":
             await websocket.send_text("You selected Recommend New Songs.")
@@ -253,29 +279,13 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 async def search_song_vocadb(query: str) -> List[dict]:
+    print(query)
     url = "https://vocadb.net/api/songs/"
     params = {"query": query, "fields": "Artists", "lang": "English"}
     async with httpx.AsyncClient() as client:
         response = await client.get(url, params=params)
         response.raise_for_status()
         return response.json()["items"]
-
-
-def test_vocadb_api():
-
-    url = "https://api.vocadb.net/api/songs"
-    params = {"query": "test song", "fields": "Artists", "lang": "English"}
-    try:
-        with httpx.Client() as client:
-            response = client.get(url, params=params)
-            response.raise_for_status()
-            print(response.json())
-    except httpx.HTTPStatusError as e:
-        print(f"HTTP error occurred: {e.response.status_code}")
-    except httpx.RequestError as e:
-        print(f"Request error occurred: {e}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":
