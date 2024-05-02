@@ -138,8 +138,7 @@
             "Separation Completed. Download will start soon."
           );
         }
-        if (message.startsWith("Downloading files.")) {
-          addMessageToDisplay("Downloading files.");
+        if (message.startsWith("Downloading files...")) {
           window.location.href = "http://192.168.0.14:3939/download/all/";
         }
         if (message.includes("An error occurred during separation:")) {

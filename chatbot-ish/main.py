@@ -1,6 +1,3 @@
-import shutil
-# from ShazamAPI import Shazam
-# from collections import Counter
 from fastapi.responses import FileResponse
 import os
 import httpx
@@ -13,7 +10,6 @@ from fastapi import (
     HTTPException,
     Response,
 )
-from fastapi.responses import StreamingResponse
 from fastapi.templating import Jinja2Templates
 from typing import List
 import asyncio
@@ -28,10 +24,6 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
-
-# Importing the bgr_image function from shazam_search.py
-import glob
-from shazam_search import bgr_image
 
 app = FastAPI()
 
@@ -184,7 +176,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     title = info[0]
                     artist = info[1]
                     background_image_url = info[2]
-                    
+
             else:
                 await websocket.send_text("No file uploaded.")
 
@@ -236,7 +228,7 @@ async def websocket_endpoint(websocket: WebSocket):
                                 for song in search_results
                             ]
                         )
-                        await websocket.send_text(f"Found songs:\n{result_messages}")
+                        await websocket.send_text(f"vocaDB info:\n{result_messages}")
                 except httpx.ConnectError as e:
                     await websocket.send_text(f"Could not connect to VocaDB API: {str(e)}")
                 except Exception as e:
