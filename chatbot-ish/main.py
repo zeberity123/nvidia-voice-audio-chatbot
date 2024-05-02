@@ -215,7 +215,7 @@ async def websocket_endpoint(websocket: WebSocket):
             # Send the extracted information back to the client
             await websocket.send_text(f"Title: {title}")
             await websocket.send_text(f"Artist: {artist}")
-            await websocket.send_text(f"Background Image URL: {background_image_url}")
+            # await websocket.send_text(f"Background Image URL: {background_image_url}")
 
             await websocket.send_text("Would you like to use vocaDB? (yes/no)")
             using_vocadb = await websocket.receive_text()
