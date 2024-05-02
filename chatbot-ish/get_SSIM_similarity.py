@@ -11,7 +11,7 @@ def get_ssim_similarity(path):
     y, sr = librosa.load(path)
     mel_spectrogram = librosa.feature.melspectrogram(y=y, sr=sr)
     mel_spectrogram_normalized = mel_spectrogram / np.max(mel_spectrogram)
-    folder_path = r'recommending/data/mel_data_vocalo'
+    folder_path = r'data/mel_data_vocaro'
 
     similarity_list = []
     files = os.listdir(folder_path)

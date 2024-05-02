@@ -19,6 +19,7 @@ from typing import List
 import asyncio
 import run_spleeter
 import shazam_search
+import get_SSIM_similarity
 import zipfile
 from fastapi import Path
 from pathlib import Path
@@ -158,8 +159,8 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     await websocket.send_text("Welcome to the oooo service!")
 
-    title = ''
-    artist = ''
+    title = 'found 0'
+    artist = 'found 0'
     background_image_url = ''
 
     reload = True
@@ -172,21 +173,21 @@ async def websocket_endpoint(websocket: WebSocket):
             )
             # as soon as the file is uploaded it should be sent to shazam_search.py to get the title, artist and background image
             filename_data = await websocket.receive_text()
-            print(filename_data)
 
             if filename_data.startswith("uploaded:"):
                 filename = filename_data.split("uploaded:")[1]
                 AUDIO_FILENAME = filename
-                await websocket.send_text(f"You've uploaded {AUDIO_FILENAME}.")
+                await websocket.send_text(f"uploading: {AUDIO_FILENAME}...")
                 # Call the function to extract information using Shazam
                 info = shazam_search.bgr_image(AUDIO_FILENAME)
-                title = info[0]
-                artist = info[1]
-                background_image_url = info[2]
-
-
+                if info != 0:
+                    title = info[0]
+                    artist = info[1]
+                    background_image_url = info[2]
+                    
             else:
                 await websocket.send_text("No file uploaded.")
+
         await websocket.send_text(
             "Choose an option:\n"
             "1. Audio Separation\n"
@@ -243,7 +244,17 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
         elif data == "3":
-            await websocket.send_text("You selected Recommend New Songs.")
+            await websocket.send_text("Please wait...")
+            path = f'uploaded_files/{AUDIO_FILENAME}'
+            similarity_list = get_SSIM_similarity.get_ssim_similarity(path)
+            similarity_songs = get_SSIM_similarity.get_top_n_songs(similarity_list)
+            await websocket.send_text(
+                f"1. {similarity_songs[0]}\n"
+                f"2. {similarity_songs[1]}\n"
+                f"3. {similarity_songs[2]}\n"
+                f"4. {similarity_songs[3]}\n"
+                f"5. {similarity_songs[4]}\n"
+            )
 
         else:
             await websocket.send_text(
