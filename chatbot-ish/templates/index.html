@@ -8,13 +8,22 @@
 
     <style>
       @keyframes typing {
-        from { width: 0 }
-        to { width: 100% }
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
       }
 
       @keyframes blink-caret {
-        from, to { border-color: transparent }
-        50% { border-color: black }
+        from,
+        to {
+          border-color: transparent;
+        }
+        50% {
+          border-color: black;
+        }
       }
       .typing {
         overflow: hidden; /* Ensures the content is not revealed until the animation is complete */
@@ -39,16 +48,16 @@
         background-color: rgba(0, 0, 0, 0.5);
       }
       body::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: url('') center center no-repeat;
-          background-size: cover;
-          opacity: 0.4; 
-          z-index: -1;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("") center center no-repeat;
+        background-size: cover;
+        opacity: 0.4;
+        z-index: -1;
       }
       .chat-container {
         width: 360px;
@@ -131,22 +140,20 @@
     </div>
 
     <script>
-
       // Function to change background image URL
       function changeBackgroundImage(url) {
-          var styleElement = document.getElementById('dynamic-background-style');
-          if (!styleElement) {
-              styleElement = document.createElement('style');
-              document.head.appendChild(styleElement);
-              styleElement.id = 'dynamic-background-style';
-          }
-          styleElement.innerHTML = `body::before { background-image: url('${url}'); }`;
+        var styleElement = document.getElementById("dynamic-background-style");
+        if (!styleElement) {
+          styleElement = document.createElement("style");
+          document.head.appendChild(styleElement);
+          styleElement.id = "dynamic-background-style";
+        }
+        styleElement.innerHTML = `body::before { background-image: url('${url}'); }`;
       }
 
+      var ws = new WebSocket("ws://172.30.1.87:3939/ws");
 
-      var ws = new WebSocket("ws://192.168.0.167:3939/ws");
-
-      var bgr_url = ''
+      var bgr_url = "";
 
       ws.onopen = function () {
         console.log("Connected to the WebSocket server");
@@ -158,24 +165,25 @@
 
       function receiveMessage(message) {
         console.log("Received message:", message);
-        if (message.startsWith("Background Image URL")){
+        if (message.startsWith("Background Image URL")) {
           var bgr_url = message.split("URL: ")[1];
-          changeBackgroundImage(bgr_url)
-        }
-        else {
+          changeBackgroundImage(bgr_url);
+        } else {
           var messages = document.getElementById("messages");
           var messageElement = document.createElement("li");
           messageElement.classList.add("received", "typing");
           messages.appendChild(messageElement);
 
           // Here is where you set the initial content
-          messageElement.innerHTML = "";  // Start with empty content
+          messageElement.innerHTML = ""; // Start with empty content
           let i = 0;
           const speed = 15; // Adjust the typing speed as needed
           function typeWriter() {
             if (i < message.length) {
               // Only append one character at a time
-              messageElement.innerHTML += message.charAt(i).replace(/\n/g, "<br>");
+              messageElement.innerHTML += message
+                .charAt(i)
+                .replace(/\n/g, "<br>");
               i++;
               setTimeout(typeWriter, speed);
               if (message.includes("VocaDB info:")) {
@@ -202,7 +210,7 @@
             );
           }
           if (message.startsWith("Downloading files...")) {
-            window.location.href = "http://192.168.0.167:3939/download/all/";
+            window.location.href = "http://172.30.1.87:3939/download/all/";
           }
           if (message.includes("An error occurred during separation:")) {
             addMessageToDisplay(
@@ -214,7 +222,6 @@
             console.log("Background URL:", url);
             changeBackgroundImage(url); // Change background image
           }
-
         }
         messages.scrollTop = messages.scrollHeight;
       }
@@ -228,7 +235,7 @@
         var messages = document.getElementById("messages");
         messages.scrollTop = messages.scrollHeight;
       }
-    
+
       function addMessageToDisplay(text, type) {
         var messages = document.getElementById("messages");
         var messageElement = document.createElement("li");
@@ -256,4 +263,4 @@
       }
     </script>
   </body>
-</html> 
+</html>

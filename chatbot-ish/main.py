@@ -23,9 +23,6 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# FILE_DIR = os.path.join(BASE_DIR, "uploaded_files")
-# DOWN_DIR = os.path.join(BASE_DIR, "processed_files")
 BASE_DIR = Path(__file__).resolve().parent
 FILE_DIR = BASE_DIR / "uploaded_files"
 DOWN_DIR = BASE_DIR / "processed_files"
@@ -136,7 +133,7 @@ async def search_files(query: str):
 async def websocket_endpoint(websocket: WebSocket):
     await asyncio.sleep(0.3)
     await websocket.accept()
-    await websocket.send_text("Welcome to the oooo service!")
+    await websocket.send_text("Welcome to the NvauC service!")
     await asyncio.sleep(0.4)
 
     title = "found 0"
@@ -198,6 +195,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 )
                 await asyncio.sleep(1.5)
                 await websocket.send_text("Downloading files...")
+                await asyncio.sleep(0.4)
 
         elif data == "2":
             # Send the extracted information back to the client
@@ -250,9 +248,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
         elif data == "3":
             await websocket.send_text("Please wait...")
+            await asyncio.sleep(0.3)
             path = f"uploaded_files/{AUDIO_FILENAME}"
             similarity_list = get_SSIM_similarity.get_ssim_similarity(path)
-            similarity_songs = get_SSIM_similarity.get_top_n_songs(similarity_list)
+            similarity_songs = get_SSIM_similarity.get_top_n_songs(
+                similarity_list)
             await websocket.send_text(
                 f"1. {similarity_songs[0]}\n"
                 f"2. {similarity_songs[1]}\n"
@@ -260,6 +260,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 f"4. {similarity_songs[3]}\n"
                 f"5. {similarity_songs[4]}\n"
             )
+            await asyncio.sleep(1.4)
 
         else:
             await websocket.send_text(
