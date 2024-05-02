@@ -1,3 +1,0 @@
-# Introduction
-FastAPI Connection
-## Subtitle
