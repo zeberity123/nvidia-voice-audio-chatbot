@@ -3,6 +3,10 @@ import re
 from ShazamAPI import Shazam
 import httpx
 
+def clean_song_title(title):
+    title = title.split("(")[0]
+    return title.split("feat.")
+
 def sanitize_filename(filename):
     # Replace invalid characters with underscores
     return re.sub(r'[\\/*?:"<>|]', '_', filename)
@@ -13,7 +17,7 @@ def bgr_image(audio_file):
     if file_extension not in ['.mp3', '.wav']:
         raise ValueError("Invalid file format. Supported formats: MP3, WAV")
 
-    audio = open(audio_file, 'rb').read()
+    audio = open(f'uploaded_files/{audio_file}', 'rb').read()
     # Initialize Shazam and recognize the song
     shazam = Shazam(audio)
     recognize_generator = shazam.recognizeSong()
@@ -29,8 +33,6 @@ def bgr_image(audio_file):
         artist = track_info['subtitle']
         if background_url:
             title = track_info['title']
-            artist = artist.encode('utf-8').decode('cp949', 'ignore')  # Convert artist to cp949 encoding
-            title = title.encode('utf-8').decode('cp949', 'ignore')  # Convert title to cp949 encoding
             print("Title:", title)
             results.append(title)
             print("Artist:", artist)
