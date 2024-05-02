@@ -134,10 +134,10 @@ async def search_files(query: str):
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-
+    await asyncio.sleep(0.3)
     await websocket.accept()
     await websocket.send_text("Welcome to the oooo service!")
-    await asyncio.sleep(1.5)
+    await asyncio.sleep(0.4)
 
     title = "found 0"
     artist = "found 0"
@@ -145,9 +145,10 @@ async def websocket_endpoint(websocket: WebSocket):
 
     reload = True
     change_file = True
+    no_file_uploaded = True
 
     while reload:
-        if change_file:
+        while change_file and no_file_uploaded:
             await websocket.send_text(
                 "Please upload your file. (mp3, wav format supported only)"
             )
@@ -158,7 +159,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 filename = filename_data.split("uploaded:")[1]
                 AUDIO_FILENAME = filename
                 await websocket.send_text(f"uploading: {AUDIO_FILENAME}...")
-                await asyncio.sleep(1.5)
                 # Call the function to extract information using Shazam
                 info = shazam_search.bgr_image(AUDIO_FILENAME)
                 if info != 0:
@@ -166,9 +166,12 @@ async def websocket_endpoint(websocket: WebSocket):
                     artist = info[1]
                     background_image_url = info[2]
 
+                no_file_uploaded = False
+
             else:
                 await websocket.send_text("No file uploaded.")
-                await asyncio.sleep(1.5)
+                no_file_uploaded = True
+                await asyncio.sleep(0.4)
 
         await websocket.send_text(
             "Choose an option:\n"
@@ -176,7 +179,7 @@ async def websocket_endpoint(websocket: WebSocket):
             "2. Finding Info\n"
             "3. Recommend New Songs"
         )
-        await asyncio.sleep(2)
+        await asyncio.sleep(1.4)
 
         data = await websocket.receive_text()
 
@@ -200,19 +203,18 @@ async def websocket_endpoint(websocket: WebSocket):
             # Send the extracted information back to the client
 
             await websocket.send_text(f"Title: {title}")
-            await asyncio.sleep(0.7)
             await websocket.send_text(f"Artist: {artist}")
-            await asyncio.sleep(0.7)
+            await asyncio.sleep(1.2)
             await websocket.send_text("Would you like to use VocaDB? (y/n)")
-            await asyncio.sleep(1)
             await websocket.send_text(f"Background Image URL: {background_image_url}")
 
             using_vocadb = await websocket.receive_text()
 
             if using_vocadb == "yes" or using_vocadb == "y":
+
                 if title == "found 0":
                     await websocket.send_text(f"Type song title: ")
-                    await asyncio.sleep(0.7)
+                    await asyncio.sleep(0.1)
                     title = await websocket.receive_text()
 
                 try:
@@ -220,19 +222,29 @@ async def websocket_endpoint(websocket: WebSocket):
                     search_results = await search_song_vocadb(title)
                     if not search_results:
                         await websocket.send_text("No matching songs found.")
+                        await asyncio.sleep(0.1)
                         title = "found 0"
                     else:
+
                         result_messages = "\n".join(
                             [
                                 f"{song['name']} by {', '.join(artist['name'] for artist in song['artists'])}"
                                 for song in search_results
                             ]
+                        ).split("\n")
+
+                        await websocket.send_text(
+                            f"VocaDB info:\n"
+                            f"{result_messages[0]}\n"
+                            f"{result_messages[1]}\n"
+                            f"{result_messages[2]}\n"
                         )
-                        await websocket.send_text(f"VocaDB info:\n{result_messages}")
+                        await asyncio.sleep(2.1)
                 except httpx.ConnectError as e:
                     await websocket.send_text(
                         f"Could not connect to VocaDB API: {str(e)}"
                     )
+                    await asyncio.sleep(0.1)
                 except Exception as e:
                     await websocket.send_text(f"Error during search: {str(e)}")
 
@@ -253,12 +265,14 @@ async def websocket_endpoint(websocket: WebSocket):
             await websocket.send_text(
                 f"Unrecognized option: {data}. Please select 1, 2, or 3."
             )
+            await asyncio.sleep(0.8)
             continue
 
         # Ask if they want to continue with another service
         await websocket.send_text("Do you want to continue with another service? (y/n)")
+        await asyncio.sleep(1)
         continue_operation = await websocket.receive_text()
-        if continue_operation.lower() != "yes" or continue_operation.lower() != "y":
+        if continue_operation.lower() == "no" or continue_operation.lower() == "n":
             await websocket.send_text("Thank you for using our service. Goodbye!")
             reload = False
             await websocket.close()
@@ -266,10 +280,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
         elif continue_operation.lower() == "yes" or continue_operation.lower() == "y":
             await websocket.send_text("Continue with same file? (y/n)")
+            await asyncio.sleep(0.8)
             same_operation = await websocket.receive_text()
             if same_operation.lower() == "no" or same_operation.lower() == "n":
                 reload = True
                 change_file = True
+                no_file_uploaded = True
                 run_spleeter.delete_uploaded(AUDIO_FILENAME)
                 AUDIO_FILENAME = ""
                 continue  # Go back to upload file

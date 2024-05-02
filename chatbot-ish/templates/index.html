@@ -171,19 +171,22 @@
           // Here is where you set the initial content
           messageElement.innerHTML = "";  // Start with empty content
           let i = 0;
-          const speed = 25; // Adjust the typing speed as needed
+          const speed = 15; // Adjust the typing speed as needed
           function typeWriter() {
             if (i < message.length) {
               // Only append one character at a time
               messageElement.innerHTML += message.charAt(i).replace(/\n/g, "<br>");
               i++;
               setTimeout(typeWriter, speed);
+              if (message.includes("VocaDB info:")) {
+                messageElement.classList.remove("typing");
+              }
             } else {
               messageElement.classList.remove("typing"); // Remove typing effect after complete
             }
+            messages.scrollTop = messages.scrollHeight;
           }
           typeWriter(); // Start the typing effect
-        
           messages.appendChild(messageElement);
           if (message.includes("Please upload your file")) {
             document.getElementById("uploadForm").style.display = "flex";
@@ -211,10 +214,9 @@
             console.log("Background URL:", url);
             changeBackgroundImage(url); // Change background image
           }
-          messages.scrollTop = messages.scrollHeight;
+
         }
-        
-        
+        messages.scrollTop = messages.scrollHeight;
       }
 
       function sendMessage(event) {
@@ -233,6 +235,7 @@
         messageElement.classList.add(type);
         messageElement.textContent = text;
         messages.appendChild(messageElement);
+        messages.scrollTop = messages.scrollHeight;
       }
 
       function uploadFile() {
