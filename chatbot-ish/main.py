@@ -288,23 +288,6 @@ async def search_song_vocadb(query: str) -> List[dict]:
         return response.json()["items"]
 
 
-def test_vocadb_api():
-
-    url = "https://api.vocadb.net/api/songs"
-    params = {"query": "test song", "fields": "Artists", "lang": "English"}
-    try:
-        with httpx.Client() as client:
-            response = client.get(url, params=params)
-            response.raise_for_status()
-            print(response.json())
-    except httpx.HTTPStatusError as e:
-        print(f"HTTP error occurred: {e.response.status_code}")
-    except httpx.RequestError as e:
-        print(f"Request error occurred: {e}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", workers=4, port=3939,
