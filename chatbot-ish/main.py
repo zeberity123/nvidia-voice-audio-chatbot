@@ -197,7 +197,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "Separation Complete. Download will start soon."
                 )
                 await asyncio.sleep(1.5)
-                await websocket.send_text("Downloading files.")
+                await websocket.send_text("Downloading files...")
 
         elif data == "2":
             # Send the extracted information back to the client

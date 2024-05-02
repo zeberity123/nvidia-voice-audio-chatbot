@@ -144,7 +144,7 @@
       }
 
 
-      var ws = new WebSocket("ws://192.168.0.213:3939/ws");
+      var ws = new WebSocket("ws://192.168.0.167:3939/ws");
 
       var bgr_url = ''
 
@@ -202,7 +202,7 @@
             );
           }
           if (message.startsWith("Downloading files...")) {
-            window.location.href = "http://192.168.0.213:3939/download/all/";
+            window.location.href = "http://192.168.0.167:3939/download/all/";
           }
           if (message.includes("An error occurred during separation:")) {
             addMessageToDisplay(
