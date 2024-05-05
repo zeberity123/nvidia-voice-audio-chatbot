@@ -1,40 +1,40 @@
 import os
 import subprocess
 
-INSTRUMENTS = ["mix", "vocal"]
-OUT_LOC = 'chatbot-ish/processed_files'
-# Ensure this is correct, you had 'chatboot-ish' which might be a typo
-IN_LOC = 'chatbot-ish/uploaded_files'
-
 
 def run_vocal_remover(filename):
-    # You can directly initialize the list with the filename
-    song_names = [filename]
+    # Define paths using absolute references based on the script's location
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    IN_LOC = os.path.join(base_dir, 'uploaded_files')
+    OUT_LOC = os.path.join(base_dir, 'processed_files')
+    script_path = os.path.join(base_dir, 'vocal_remover', 'inference.py')
 
-    for song_name in song_names:
-        name_split = song_name.split(".")[0]
-        pre_folder = name_split[:]  # This is just a copy of name_split
+    # Full path to the input file
+    in_loc = os.path.join(IN_LOC, filename)
+    if not os.path.isfile(in_loc):
+        print(f"Input file not found: {in_loc}")
+        return
 
-        # Ensure the file exists before passing to subprocess
-        in_loc = f"{IN_LOC}/{song_name}"
+    # Ensure output directory exists
+    os.makedirs(OUT_LOC, exist_ok=True)
 
-        # Provide the full path to 'inference.py'
-        script_path = "C:/Users/birth/Desktop/새 폴더/nvidia-voice-audio-chatbot/chatbot-ish/vocal_remover/inference.py"
+    # Command to run the Python script using 'python' directly
+    command = [
+        "python", script_path, "--input", in_loc,
+        "--output_dir", OUT_LOC, "--gpu", "0"
+    ]
+    print("Executing command:", ' '.join(command))
+    subprocess.call(command)
 
-        commands = [
-            ["python", script_path, "--input", in_loc,
-                "--output_dir", OUT_LOC, "--gpu", "0"]
-        ]
+    # Post-processing (assuming files are created by the script)
+    for instrument in ["mix", "vocal"]:
+        source_path = os.path.join(
+            OUT_LOC, f"{os.path.splitext(filename)[0]}_{instrument}.wav")
+        if os.path.exists(source_path):
+            print(f"File processed successfully: {source_path}")
+        else:
+            print(f"Processed file not found: {source_path}")
 
-        for instrument in INSTRUMENTS:
-            commands.append(
-                [
-                    "mv",
-                    f"{OUT_LOC}/{name_split}/{instrument}.*",
-                    f"{OUT_LOC}/{pre_folder}_{instrument}.wav",
-                ]
-            )
-        commands.append(["rm", "-r", f"{OUT_LOC}/{name_split}"])
 
-        for command in commands:
-            subprocess.call(command)
+# Example call with file name
+run_vocal_remover("Legends Never Die.mp3")
