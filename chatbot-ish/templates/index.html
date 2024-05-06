@@ -151,7 +151,7 @@
         styleElement.innerHTML = `body::before { background-image: url('${url}'); }`;
       }
 
-      var ws = new WebSocket("ws://172.30.1.87:3939/ws");
+      var ws = new WebSocket("ws://127.0.0.1:3939/ws");
 
       var bgr_url = "";
 
@@ -210,7 +210,7 @@
             );
           }
           if (message.startsWith("Downloading files...")) {
-            window.location.href = "http://172.30.1.87:3939/download/all/";
+            window.location.href = "http://127.0.0.1:3939/download/all/";
           }
           if (message.includes("An error occurred during separation:")) {
             addMessageToDisplay(
