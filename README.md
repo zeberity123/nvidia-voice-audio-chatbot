@@ -18,9 +18,19 @@
 
 ## Requirements
 
-## Convention
+## Installation
+```
+git clone https://github.com/zeberity123/nvidia-voice-audio-chatbot.git
+cd nvidia-voice-audio-chatbot
+pip install -r requirements.txt
+```
 
 ## How to run
+```
+cd chatbot-ish
+python main.py
+```
+**On your web browser**: localhost:3939
 
 ## Resources
 - MUSDB18-HQ: https://sigsep.github.io/datasets/musdb.html#musdb18-compressed-stems
