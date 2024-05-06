@@ -311,5 +311,5 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "main:app", host="0.0.0.0", workers=4, port=3939, log_level="debug", reload=True
+        "main:app", host="127.0.0.1", workers=4, port=3939, log_level="debug", reload=True
     )
