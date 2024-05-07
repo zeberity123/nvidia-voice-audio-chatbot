@@ -18,9 +18,22 @@
 
 ## Requirements
 
-## Convention
+## Installation
+Download the latest version from [here](https://github.com/zeberity123/nvidia-voice-audio-chatbot/releases).
+
+**Replace** chatbot-ish/pretrained_models/4stems/**model.ckpt-49900.data-00000-of-00001**.
+```
+cd nvidia-voice-audio-chatbot-1.0.0
+pip install -r requirements.txt
+```
 
 ## How to run
+run nvidia-voice-audio-chatbot-1.0.0/chatbot-ish/main.py
+```
+cd chatbot-ish
+python main.py
+```
+**On your web browser**: localhost:3939
 
 ## Resources
 - MUSDB18-HQ: https://sigsep.github.io/datasets/musdb.html#musdb18-compressed-stems
