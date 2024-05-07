@@ -69,10 +69,8 @@ class Separator(object):
 
     def separate(self, X_spec):
         n_frame = X_spec.shape[2]
-        pad_l, pad_r, roi_size = dataset.make_padding(
-            n_frame, self.cropsize, self.offset)
-        X_spec_pad = np.pad(
-            X_spec, ((0, 0), (0, 0), (pad_l, pad_r)), mode='constant')
+        pad_l, pad_r, roi_size = dataset.make_padding(n_frame, self.cropsize, self.offset)
+        X_spec_pad = np.pad(X_spec, ((0, 0), (0, 0), (pad_l, pad_r)), mode='constant')
         X_spec_pad /= np.abs(X_spec).max()
 
         mask = self._separate(X_spec_pad, roi_size)
@@ -84,18 +82,15 @@ class Separator(object):
 
     def separate_tta(self, X_spec):
         n_frame = X_spec.shape[2]
-        pad_l, pad_r, roi_size = dataset.make_padding(
-            n_frame, self.cropsize, self.offset)
-        X_spec_pad = np.pad(
-            X_spec, ((0, 0), (0, 0), (pad_l, pad_r)), mode='constant')
+        pad_l, pad_r, roi_size = dataset.make_padding(n_frame, self.cropsize, self.offset)
+        X_spec_pad = np.pad(X_spec, ((0, 0), (0, 0), (pad_l, pad_r)), mode='constant')
         X_spec_pad /= X_spec_pad.max()
 
         mask = self._separate(X_spec_pad, roi_size)
 
         pad_l += roi_size // 2
         pad_r += roi_size // 2
-        X_spec_pad = np.pad(
-            X_spec, ((0, 0), (0, 0), (pad_l, pad_r)), mode='constant')
+        X_spec_pad = np.pad(X_spec, ((0, 0), (0, 0), (pad_l, pad_r)), mode='constant')
         X_spec_pad /= X_spec_pad.max()
 
         mask_tta = self._separate(X_spec_pad, roi_size)
@@ -110,8 +105,7 @@ class Separator(object):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--gpu', '-g', type=int, default=-1)
-    p.add_argument('--pretrained_model', '-P', type=str,
-                   default='models/baseline.pth')
+    p.add_argument('--pretrained_model', '-P', type=str, default='models/baseline.pth')
     p.add_argument('--input', '-i', required=True)
     p.add_argument('--sr', '-r', type=int, default=44100)
     p.add_argument('--n_fft', '-f', type=int, default=2048)
@@ -124,22 +118,15 @@ def main():
     p.add_argument('--output_dir', '-o', type=str, default="")
     args = p.parse_args()
 
-    # Correcting the model path
-    model_path = os.path.join(os.path.dirname(
-        os.path.abspath(__file__)), args.pretrained_model)
-    if not os.path.exists(model_path):
-        print(f"Error: Model file not found at {model_path}")
-        return  # Exit if the model file does not exist
-
     print('loading model...', end=' ')
     device = torch.device('cpu')
     if args.gpu >= 0:
         if torch.cuda.is_available():
-            device = torch.device(f'cuda:{args.gpu}')
+            device = torch.device('cuda:{}'.format(args.gpu))
         elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
             device = torch.device('mps')
     model = nets.CascadedNet(args.n_fft, args.hop_length, 32, 128)
-    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.load_state_dict(torch.load(args.pretrained_model, map_location='cpu'))
     model.to(device)
     print('done')
 
@@ -151,6 +138,7 @@ def main():
     print('done')
 
     if X.ndim == 1:
+        # mono to stereo
         X = np.asarray([X, X])
 
     print('stft of wave source...', end=' ')
@@ -171,30 +159,29 @@ def main():
         y_spec, v_spec = sp.separate(X_spec)
 
     print('validating output directory...', end=' ')
-    output_dir = args.output_dir if args.output_dir else os.path.dirname(
-        args.input)
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir = args.output_dir
+    if output_dir != "":  # modifies output_dir if theres an arg specified
+        output_dir = output_dir.rstrip('/') + '/'
+        os.makedirs(output_dir, exist_ok=True)
     print('done')
 
     print('inverse stft of instruments...', end=' ')
-    wave = spec_utils.spectrogram_to_wave(y_spec, args.hop_length)
+    wave = spec_utils.spectrogram_to_wave(y_spec, hop_length=args.hop_length)
     print('done')
-    sf.write(os.path.join(
-        output_dir, f"{basename}_Instruments.wav"), wave.T, sr)
+    sf.write('{}{}_Instruments.wav'.format(output_dir, basename), wave.T, sr)
 
     print('inverse stft of vocals...', end=' ')
-    wave = spec_utils.spectrogram_to_wave(v_spec, args.hop_length)
+    wave = spec_utils.spectrogram_to_wave(v_spec, hop_length=args.hop_length)
     print('done')
-    sf.write(os.path.join(output_dir, f"{basename}_Vocals.wav"), wave.T, sr)
+    sf.write('{}{}_Vocals.wav'.format(output_dir, basename), wave.T, sr)
 
     if args.output_image:
         image = spec_utils.spectrogram_to_image(y_spec)
-        utils.imwrite(os.path.join(
-            output_dir, f"{basename}_Instruments.jpg"), image)
+        utils.imwrite('{}{}_Instruments.jpg'.format(output_dir, basename), image)
+
         image = spec_utils.spectrogram_to_image(v_spec)
-        utils.imwrite(os.path.join(
-            output_dir, f"{basename}_Vocals.jpg"), image)
+        utils.imwrite('{}{}_Vocals.jpg'.format(output_dir, basename), image)
 
 
 if __name__ == '__main__':
-    main
+    main()

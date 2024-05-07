@@ -37,4 +37,4 @@ def run_vocal_remover(filename):
 
 
 # Example call with file name
-run_vocal_remover("Legends Never Die.mp3")
+run_vocal_remover("melt_mixture.wav")
