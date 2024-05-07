@@ -16,6 +16,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
+import run_vocal_remover
 
 app = FastAPI()
 
@@ -185,8 +186,9 @@ async def websocket_endpoint(websocket: WebSocket):
             await asyncio.sleep(1)
             await websocket.send_text("Wait for Separation...")
             spl = run_spleeter.run_spleeter(AUDIO_FILENAME)
+            vrm = run_vocal_remover.run_vocal_remover(AUDIO_FILENAME)
 
-            if spl == 1:
+            if spl == 1 and vrm == 1:
                 await websocket.send_text("An Error occurred during separation.")
                 await asyncio.sleep(1.5)
             else:
