@@ -37,7 +37,7 @@ def run_vocal_remover(filename):
         # else:
         #     print(f"Processed file not found: {source_path}")
 
-    commands.append(['rm', f'processed_files/{name_split}_Instruments.*'])
+    # commands.append(['rm', f'processed_files/{name_split}_Instruments.*'])
     commands.append(['mv', f'processed_files/{name_split}_Vocals.*', f'processed_files/{name_split}_vocals.wav'])
 
     for i in commands:
