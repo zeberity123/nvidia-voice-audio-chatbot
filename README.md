@@ -21,7 +21,7 @@
 ## Installation
 Download the latest version from [here](https://github.com/zeberity123/nvidia-voice-audio-chatbot/releases).
 
-*Replace chatbot-ish/pretrained_models/4stems/model.ckpt-49900.data-00000-of-00001.
+**Replace** chatbot-ish/pretrained_models/4stems/**model.ckpt-49900.data-00000-of-00001**.
 ```
 cd nvidia-voice-audio-chatbot-1.0.0
 pip install -r requirements.txt
